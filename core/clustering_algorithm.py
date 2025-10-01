@@ -1,10 +1,3 @@
-"""
-Clustering algorithm abstract base class for the data mining framework.
-
-This module defines the ClusteringAlgorithm interface following the Strategy Pattern,
-allowing different clustering algorithms to be used interchangeably.
-"""
-
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
 import numpy as np

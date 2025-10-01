@@ -1,10 +1,3 @@
-"""
-Dataset abstract base class for the data mining framework.
-
-This module defines the Dataset interface following the Strategy Pattern,
-allowing different data sources and formats to be used interchangeably.
-"""
-
 from abc import ABC, abstractmethod
 from typing import Any, List, Tuple, Union
 import numpy as np
@@ -13,7 +6,7 @@ import pandas as pd
 
 class Dataset(ABC):
     """
-    Abstract base class for datasets in the data mining framework.
+    Abstract base class for datasets.
     
     This interface defines the contract that all dataset implementations
     must follow, enabling the Strategy Pattern for data handling.
