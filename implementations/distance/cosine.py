@@ -5,8 +5,6 @@ from core.distance_measure import DistanceMeasure
 
 class CosineDistance(DistanceMeasure):
     """ 
-    Concrete implementation of Cosine distance measure.
-
     Calculates the cosine distance between two vectors, which is 1 minus the cosine similarity.
     Cosine distance = 1 - (A · B) / (||A|| * ||B||)
     

@@ -1,4 +1,3 @@
-# Davies-Bouldin quality measure implementation
 from typing import List
 import numpy as np
 from sklearn.metrics import davies_bouldin_score
@@ -9,8 +8,7 @@ from core.dataset import Dataset
 
 class DaviesBouldinIndex(QualityMeasure):
     """
-    Implementation of the Davies–Bouldin Index (DBI) quality measure.
-
+    The Davies-Bouldin Index (DBI) is a metric for evaluating clustering algorithms.
     - Lower values indicate better clustering (0 = perfect).
     - DBI is defined as the average similarity between clusters,
       where similarity is a function of within-cluster scatter

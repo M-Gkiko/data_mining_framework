@@ -4,9 +4,7 @@ from core.distance_measure import DistanceMeasure
 
 
 class ManhattanDistance(DistanceMeasure):
-    """
-    Concrete implementation of Manhattan distance.
-    
+    """    
     The Manhattan distance (L1 norm) calculates the sum of absolute differences
     between corresponding coordinates of two points. This is also known as 
     taxicab distance or city block distance.

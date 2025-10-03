@@ -7,9 +7,7 @@ from core.distance_measure import DistanceMeasure
 
 
 class DBSCANClustering(ClusteringAlgorithm):
-    """
-    DBSCAN clustering adapter that wraps sklearn.cluster.DBSCAN.
-    
+    """    
     DBSCAN (Density-Based Spatial Clustering of Applications with Noise) groups
     together points that are closely packed while marking outliers as noise.
     """
