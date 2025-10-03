@@ -27,7 +27,6 @@ class DaviesBouldinIndex(QualityMeasure):
                 f"Number of labels ({len(labels)}) does not match dataset size ({dataset.get_rows()})."
             )
 
-        # Convert to numpy array
         X = np.asarray(data)
 
         # Compute Davies–Bouldin Index using sklearn
