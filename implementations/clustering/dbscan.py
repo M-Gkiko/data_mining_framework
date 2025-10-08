@@ -51,14 +51,14 @@ class DBSCANClustering(ClusteringAlgorithm):
         
         return distance_matrix
     
-    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
         """
         Fit the DBSCAN clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
+            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None, uses euclidean)
             **kwargs: Optional hyperparameters including:
-                - distance_measure (DistanceMeasure): The distance measure to use
                 - eps (float): Maximum distance between samples for neighborhood
                 - min_samples (int): Minimum samples in neighborhood for core point
             
@@ -69,7 +69,6 @@ class DBSCANClustering(ClusteringAlgorithm):
             raise ValueError("Dataset is empty")
         
         # Extract hyperparameters from kwargs
-        distance_measure = kwargs.get('distance_measure')
         eps = kwargs.get('eps', self.eps)
         min_samples = kwargs.get('min_samples', self.min_samples)
         

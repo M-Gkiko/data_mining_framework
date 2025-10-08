@@ -4,6 +4,7 @@ Tests for the ClusteringAlgorithm abstract base class.
 
 import pytest
 import unittest
+from typing import Optional
 from unittest.mock import Mock, MagicMock
 from core.clustering_algorithm import ClusteringAlgorithm
 from core.dataset import Dataset
@@ -33,7 +34,7 @@ class MockClusteringAlgorithm(ClusteringAlgorithm):
         self._labels = None
         self._fitted = False
     
-    def fit(self, dataset, **kwargs):
+    def fit(self, dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs):
         """Mock fit implementation."""
         if dataset.get_rows() == 0:
             raise ValueError("Dataset is empty")
@@ -69,7 +70,7 @@ class TestMockClusteringAlgorithm(unittest.TestCase):
         """Test fitting algorithm and retrieving labels."""
         self.mock_dataset.get_rows.return_value = 4
         
-        self.algorithm.fit(self.mock_dataset, distance_measure=self.mock_distance)
+        self.algorithm.fit(self.mock_dataset, self.mock_distance)
         labels = self.algorithm.get_labels()
         
         self.assertIsNotNone(labels)
@@ -81,7 +82,7 @@ class TestMockClusteringAlgorithm(unittest.TestCase):
         self.mock_dataset.get_rows.return_value = 0
         
         with self.assertRaises(ValueError) as context:
-            self.algorithm.fit(self.mock_dataset, distance_measure=self.mock_distance)
+            self.algorithm.fit(self.mock_dataset, self.mock_distance)
         
         self.assertIn("Dataset is empty", str(context.exception))
     
@@ -90,7 +91,7 @@ class TestMockClusteringAlgorithm(unittest.TestCase):
         self.mock_dataset.get_rows.return_value = 3
         
         # Should not raise any errors
-        self.algorithm.fit(self.mock_dataset, distance_measure=self.mock_distance, 
+        self.algorithm.fit(self.mock_dataset, self.mock_distance, 
                           k=2, max_iterations=100)
         
         labels = self.algorithm.get_labels()

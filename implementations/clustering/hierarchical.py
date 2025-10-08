@@ -50,14 +50,14 @@ class HierarchicalClustering(ClusteringAlgorithm):
                 D[j, i] = d
         return D
 
-    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
         """
         Fit the hierarchical clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
+            distance_measure (Optional[DistanceMeasure]): Custom distance measure (required for default metric='precomputed')
             **kwargs: Optional hyperparameters including:
-                - distance_measure (DistanceMeasure): Custom distance measure (required for default metric='precomputed')
                 - n_clusters (int): Number of clusters to find (default: 2)
                 - linkage (str): Linkage criterion ('complete', 'average', 'single') (default: 'complete')
                 - metric (str): Distance metric ('precomputed', 'euclidean', 'manhattan', 'cosine') (default: 'precomputed')
@@ -66,7 +66,6 @@ class HierarchicalClustering(ClusteringAlgorithm):
             ValueError: If dataset is invalid or incompatible parameters are provided
                        (e.g., linkage='ward' with metric='precomputed', or missing distance_measure with metric='precomputed')
         """
-        distance_measure = kwargs.get('distance_measure') #(optional)
         
         # Allow runtime overrides
         # Back-compat mapping if someone passes 'affinity'
