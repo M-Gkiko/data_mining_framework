@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from core.pipeline import Pipeline
 from implementations.pipelines import DRAdapter, ClusteringAdapter, DRQualityAdapter, ClusteringQualityAdapter
@@ -36,13 +36,13 @@ class BenchmarkConfig(BaseModel):
     class Config:
         extra = "allow"  # Allow additional fields from YAML
     
-    @validator('dataset')
+    @field_validator('dataset')
     def dataset_must_exist(cls, v):
         if not Path(v).exists():
             raise ValueError(f'Dataset file not found: {v}')
         return v
     
-    @validator('output_formats')
+    @field_validator('output_formats')
     def validate_formats(cls, v):
         valid = {'csv', 'json', 'yaml'}
         invalid = set(v) - valid
@@ -101,7 +101,7 @@ class BenchmarkResult:
         return "_".join(self.combination.values())
 
 
-# Factory functions to replace complex registry pattern
+# Factory functions
 def create_clustering_algorithm(name: str, **params):
     """Create clustering algorithm by name."""
     algorithms = {
