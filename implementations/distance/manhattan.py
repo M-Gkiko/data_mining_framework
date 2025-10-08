@@ -1,6 +1,7 @@
 from typing import Union
 import numpy as np
 from core.distance_measure import DistanceMeasure
+from scipy.spatial.distance import cityblock
 
 
 class ManhattanDistance(DistanceMeasure):
@@ -37,7 +38,6 @@ class ManhattanDistance(DistanceMeasure):
                 f"Point 1 has shape {p1.shape}, Point 2 has shape {p2.shape}"
             )
         
-        # Calculate Manhattan distance: sum of absolute differences
-        manhattan_dist = np.sum(np.abs(p1 - p2))
         
+        manhattan_dist = cityblock(p1, p2)
         return float(manhattan_dist)

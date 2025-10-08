@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Union
 from core.distance_measure import DistanceMeasure
+from scipy.spatial.distance import cosine
 
 
 class CosineDistance(DistanceMeasure):
@@ -34,24 +35,16 @@ class CosineDistance(DistanceMeasure):
         if p1.shape != p2.shape:
             raise ValueError(f"Points must have the same dimensions: {p1.shape} vs {p2.shape}")
         
-        dot_product = np.dot(p1, p2)
         
-        # Calculate magnitudes (L2 norms)
-        norm_p1 = np.linalg.norm(p1)
-        norm_p2 = np.linalg.norm(p2)
-        
-        # Handle zero vectors
-        if norm_p1 == 0 or norm_p2 == 0:
-            if np.array_equal(p1, p2): 
-                return 0.0
-            else:  
-                return 1.0
-        
-        # Calculate cosine similarity
-        cosine_similarity = dot_product / (norm_p1 * norm_p2)
-        
-        # Ensure cosine similarity is in valid range [-1, 1] (handle floating point errors)
-        cosine_similarity = np.clip(cosine_similarity, -1.0, 1.0)
-        
-        # Return cosine distance (1 - cosine similarity)
-        return 1.0 - cosine_similarity
+        # Handle zero vectors (scipy handles most edge cases)
+        try:
+            cosine_distance = cosine(p1, p2)
+            # scipy returns nan for zero vectors, handle this case
+            if np.isnan(cosine_distance):
+                if np.array_equal(p1, p2):  # Both are identical (including zero vectors)
+                    return 0.0
+                else:
+                    return 1.0  # One zero, one non-zero
+            return float(cosine_distance)
+        except Exception as e:
+            raise ValueError(f"Error calculating cosine distance: {str(e)}")
