@@ -6,6 +6,7 @@ from sklearn.cluster import AgglomerativeClustering
 from core.clustering_algorithm import ClusteringAlgorithm
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
+from utils.distance_utils import build_distance_matrix
 
 
 class HierarchicalClustering(ClusteringAlgorithm):
@@ -38,17 +39,6 @@ class HierarchicalClustering(ClusteringAlgorithm):
 
         self._labels: Optional[List[int]] = None
         self._model: Optional[AgglomerativeClustering] = None
-
-    def _build_distance_matrix(self, X: np.ndarray, dm: DistanceMeasure) -> np.ndarray:
-        n = X.shape[0]
-        D = np.zeros((n, n), dtype=float)
-        # Compute only upper triangle; mirror to save work
-        for i in range(n):
-            for j in range(i + 1, n):
-                d = dm.calculate(X[i], X[j])
-                D[i, j] = d
-                D[j, i] = d
-        return D
 
     def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
         """
@@ -107,7 +97,7 @@ class HierarchicalClustering(ClusteringAlgorithm):
                     "metric='precomputed' requires a distance_measure parameter. "
                     "Either provide distance_measure or use a built-in metric like 'euclidean'"
                 )
-            D = self._build_distance_matrix(X, distance_measure)
+            D = build_distance_matrix(X, distance_measure)
             self._model = AgglomerativeClustering(
                 n_clusters=self.params["n_clusters"],
                 linkage=linkage,

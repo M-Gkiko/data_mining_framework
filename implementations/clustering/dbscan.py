@@ -4,6 +4,7 @@ from sklearn.cluster import DBSCAN
 from core.clustering_algorithm import ClusteringAlgorithm
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
+from utils.distance_utils import build_distance_matrix
 
 
 class DBSCANClustering(ClusteringAlgorithm):
@@ -27,29 +28,6 @@ class DBSCANClustering(ClusteringAlgorithm):
         self._dbscan = None
         self._labels = None
         self._fitted = False
-    
-    def _build_distance_matrix(self, data: np.ndarray, distance_measure: DistanceMeasure) -> np.ndarray:
-        """
-        Build pairwise distance matrix using the custom distance measure.
-        
-        Args:
-            data (np.ndarray): Data points array of shape (n_samples, n_features)
-            distance_measure (DistanceMeasure): Custom distance measure to use
-            
-        Returns:
-            np.ndarray: Symmetric distance matrix of shape (n_samples, n_samples)
-        """
-        n_samples = data.shape[0]
-        distance_matrix = np.zeros((n_samples, n_samples))
-        
-        # Build symmetric distance matrix
-        for i in range(n_samples):
-            for j in range(i + 1, n_samples):
-                dist = distance_measure.calculate(data[i], data[j])
-                distance_matrix[i, j] = dist
-                distance_matrix[j, i] = dist  # Symmetric matrix
-        
-        return distance_matrix
     
     def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
         """
@@ -85,7 +63,7 @@ class DBSCANClustering(ClusteringAlgorithm):
         # Handle distance measure - use precomputed if provided, otherwise use euclidean
         if distance_measure is not None:
             # Build precomputed distance matrix using custom distance measure
-            distance_matrix = self._build_distance_matrix(data, distance_measure)
+            distance_matrix = build_distance_matrix(data, distance_measure)
             
             # Initialize sklearn DBSCAN with precomputed metric
             self._dbscan = DBSCAN(
