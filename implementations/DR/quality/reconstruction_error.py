@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import mean_squared_error
 from core.dataset import Dataset
-from core.dr_quality_measure import DRQualityMeasure
+from core.dimensionality_reduction_quality_measure import DRQualityMeasure
 
 
 class ReconstructionError(DRQualityMeasure):

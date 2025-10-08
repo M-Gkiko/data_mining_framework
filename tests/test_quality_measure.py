@@ -5,7 +5,7 @@ Tests for the QualityMeasure abstract base class.
 import pytest
 import unittest
 from unittest.mock import Mock
-from core.quality_measure import QualityMeasure
+from core.clustering_quality_measure import QualityMeasure
 from core.dataset import Dataset
 
 

@@ -1,7 +1,7 @@
 from .dataset import Dataset
 from .distance_measure import DistanceMeasure
 from .clustering_algorithm import ClusteringAlgorithm
-from .quality_measure import QualityMeasure
+from .clustering_quality_measure import QualityMeasure
 
 __all__ = [
     'Dataset',

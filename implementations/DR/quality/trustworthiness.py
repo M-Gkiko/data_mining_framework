@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.manifold import trustworthiness as sklearn_trustworthiness
 from core.dataset import Dataset
-from core.dr_quality_measure import DRQualityMeasure
+from core.dimensionality_reduction_quality_measure import DRQualityMeasure
 
 
 class Trustworthiness(DRQualityMeasure):

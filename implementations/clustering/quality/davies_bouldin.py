@@ -2,7 +2,7 @@ from typing import List
 import numpy as np
 from sklearn.metrics import davies_bouldin_score
 
-from core.quality_measure import QualityMeasure
+from core.clustering_quality_measure import QualityMeasure
 from core.dataset import Dataset
 
 

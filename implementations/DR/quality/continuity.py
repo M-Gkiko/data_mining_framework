@@ -1,6 +1,6 @@
 import numpy as np
 from core.dataset import Dataset
-from core.dr_quality_measure import DRQualityMeasure
+from core.dimensionality_reduction_quality_measure import DRQualityMeasure
 
 
 class Continuity(DRQualityMeasure):
