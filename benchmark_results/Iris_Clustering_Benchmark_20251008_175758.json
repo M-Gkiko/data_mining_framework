@@ -1,0 +1,165 @@
+{
+  "benchmark_results": [
+    {
+      "iteration": 1,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.065695,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 551.0568831157065
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 2,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.041562,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 551.0568831157065
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 3,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.045437,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 551.0568831157065
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 1,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.052923,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 0.6535648922754955
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 2,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.043004,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 0.6535648922754955
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 3,
+      "combination": {
+        "clustering": "Hierarchical",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.042905,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 0.6535648922754955
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 1,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.043846,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 109.80011126879062
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 2,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.042997,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 109.80011126879062
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 3,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Calinski_Harabasz"
+      },
+      "success": true,
+      "execution_time_seconds": 0.044173,
+      "quality_scores": {
+        "ClusteringQuality_CalinskiHarabaszIndex": 109.80011126879062
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 1,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.042814,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 3.8764026460242884
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 2,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.047793,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 3.8764026460242884
+      },
+      "error_message": null
+    },
+    {
+      "iteration": 3,
+      "combination": {
+        "clustering": "DBSCAN",
+        "clustering_quality": "Davies_Bouldin"
+      },
+      "success": true,
+      "execution_time_seconds": 0.046351,
+      "quality_scores": {
+        "ClusteringQuality_DaviesBouldinIndex": 3.8764026460242884
+      },
+      "error_message": null
+    }
+  ],
+  "summary": {
+    "total_runs": 12,
+    "successful_runs": 12,
+    "failed_runs": 0
+  }
+}

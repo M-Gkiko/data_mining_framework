@@ -1,0 +1,13 @@
+iteration,success,execution_time_seconds,error_message,clustering,clustering_quality,ClusteringQuality_CalinskiHarabaszIndex,ClusteringQuality_DaviesBouldinIndex
+1,True,0.065695,,Hierarchical,Calinski_Harabasz,551.056883,
+2,True,0.041562,,Hierarchical,Calinski_Harabasz,551.056883,
+3,True,0.045437,,Hierarchical,Calinski_Harabasz,551.056883,
+1,True,0.052923,,Hierarchical,Davies_Bouldin,,0.653565
+2,True,0.043004,,Hierarchical,Davies_Bouldin,,0.653565
+3,True,0.042905,,Hierarchical,Davies_Bouldin,,0.653565
+1,True,0.043846,,DBSCAN,Calinski_Harabasz,109.800111,
+2,True,0.042997,,DBSCAN,Calinski_Harabasz,109.800111,
+3,True,0.044173,,DBSCAN,Calinski_Harabasz,109.800111,
+1,True,0.042814,,DBSCAN,Davies_Bouldin,,3.876403
+2,True,0.047793,,DBSCAN,Davies_Bouldin,,3.876403
+3,True,0.046351,,DBSCAN,Davies_Bouldin,,3.876403

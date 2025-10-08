@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Benchmark runner script for clustering algorithms.
+Simplified benchmark runner script for clustering algorithms.
 
 This script loads configuration from YAML files and runs automated benchmarks
 comparing different clustering algorithms and quality measures.
@@ -10,74 +10,80 @@ import sys
 import argparse
 from pathlib import Path
 import traceback
+from datetime import datetime
 
 # Add project root to path for imports
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from benchmarks import (
-    BenchmarkConfigLoader,
-    AlgorithmRegistry,
-    PipelineBenchmark,
-    BenchmarkResultExporter
+    load_benchmark_config,
+    SimpleBenchmark,
+    export_benchmark_results,
+    print_benchmark_summary
 )
 from implementations.datasets import CSVDataset
-from implementations.clustering.hierarchical import HierarchicalClustering
-from implementations.clustering.dbscan import DBSCANClustering
-from implementations.clustering.quality.calinski_harabasz import CalinskiHarabaszIndex
-from implementations.clustering.quality.davies_bouldin import DaviesBouldinIndex
 from implementations.distance.manhattan import ManhattanDistance
 from implementations.distance.euclidean import EuclideanDistance
 
 
-def setup_algorithm_registry() -> AlgorithmRegistry:
-    """Set up the algorithm registry with available algorithms."""
-    registry = AlgorithmRegistry()
-    
-    # Register clustering algorithms
-    registry.register_algorithm(
-        "clustering", 
-        "Hierarchical", 
-        HierarchicalClustering,
-        {"n_clusters": 3, "linkage": "complete", "metric": "precomputed"}
-    )
-    
-    registry.register_algorithm(
-        "clustering",
-        "DBSCAN", 
-        DBSCANClustering,
-        {"eps": 0.6, "min_samples": 4}
-    )
-    
-    # Register clustering quality measures
-    registry.register_algorithm(
-        "clustering_quality",
-        "Calinski_Harabasz",
-        CalinskiHarabaszIndex,
-        {}
-    )
-    
-    registry.register_algorithm(
-        "clustering_quality",
-        "Davies_Bouldin",
-        DaviesBouldinIndex,
-        {}
-    )
-    
-    return registry
-
-
 def load_distance_measure(distance_name: str):
-    """Load distance measure from configuration name."""
-    distance_measures = {
+    """
+    Dynamically load distance measure from configuration name.
+    
+    This function automatically discovers distance measure classes from the
+    implementations/distance directory, allowing you to use any distance measure
+    without hardcoding it.
+    """
+    import importlib
+    import os
+    from pathlib import Path
+    
+    # First, try the common ones for quick access
+    common_measures = {
         "Manhattan": ManhattanDistance,
         "Euclidean": EuclideanDistance,
     }
     
-    if distance_name not in distance_measures:
-        raise ValueError(f"Unknown distance measure: {distance_name}. Available: {list(distance_measures.keys())}")
+    if distance_name in common_measures:
+        return common_measures[distance_name]()
     
-    return distance_measures[distance_name]()
+    # Dynamic discovery: look for distance measure classes
+    distance_dir = Path("implementations/distance")
+    available_measures = {}
+    
+    if distance_dir.exists():
+        for py_file in distance_dir.glob("*.py"):
+            if py_file.name.startswith("__"):
+                continue
+                
+            module_name = py_file.stem
+            try:
+                # Import the module dynamically
+                module = importlib.import_module(f"implementations.distance.{module_name}")
+                
+                # Look for classes that end with "Distance"
+                for attr_name in dir(module):
+                    attr = getattr(module, attr_name)
+                    if (isinstance(attr, type) and 
+                        attr_name.endswith("Distance") and 
+                        attr_name != "DistanceMeasure"):  # Exclude base class
+                        
+                        # Match by class name (e.g., "Cosine" matches "CosineDistance")
+                        class_key = attr_name.replace("Distance", "")
+                        available_measures[class_key] = attr
+                        available_measures[attr_name] = attr  # Also allow full name
+                        
+            except Exception as e:
+                print(f"Warning: Could not load distance measure from {py_file}: {e}")
+    
+    # Try to find the requested distance measure
+    if distance_name in available_measures:
+        return available_measures[distance_name]()
+    
+    # If not found, show available options
+    all_available = list(set(list(common_measures.keys()) + list(available_measures.keys())))
+    raise ValueError(f"Unknown distance measure: '{distance_name}'. Available: {sorted(all_available)}")
 
 
 def load_dataset(dataset_path: str) -> CSVDataset:
@@ -92,11 +98,19 @@ def load_dataset(dataset_path: str) -> CSVDataset:
     # Create CSVDataset instance
     dataset = CSVDataset(str(dataset_file))
     
-    print(f"Dataset loaded: {dataset.get_rows()} rows, {dataset.get_columns()} columns")
+    # Handle different return types from get_columns()
+    columns = dataset.get_columns()
+    if isinstance(columns, int):
+        num_columns = columns
+    else:
+        num_columns = len(columns)
+    
+    print(f"Dataset loaded: {dataset.get_rows()} rows, {num_columns} columns")
+    
     return dataset
 
 
-def run_benchmark_from_config(config_path: str, verbose: bool = True) -> None:
+def run_benchmark(config_path: str, verbose: bool = False):
     """
     Run benchmark from YAML configuration file.
     
@@ -109,32 +123,21 @@ def run_benchmark_from_config(config_path: str, verbose: bool = True) -> None:
         print("CLUSTERING ALGORITHM BENCHMARK")
         print("="*60)
         
-        # Load configuration
+        # Load configuration with automatic validation
         print(f"\n1. Loading configuration from: {config_path}")
-        config = BenchmarkConfigLoader.load_config(config_path)
-        
-        # Validate configuration
-        issues = BenchmarkConfigLoader.validate_config(config)
-        if issues:
-            print("Configuration validation issues:")
-            for issue in issues:
-                print(f"  - {issue}")
-            return
+        config = load_benchmark_config(config_path)
         
         print(f"   ✓ Configuration loaded: {config.name}")
-        print(f"   ✓ Dataset: {config.dataset_path}")
+        print(f"   ✓ Dataset: {config.dataset}")
         print(f"   ✓ Iterations: {config.iterations}")
         print(f"   ✓ Output formats: {config.output_formats}")
         
         # Load dataset
         print(f"\n2. Loading dataset")
-        dataset = load_dataset(config.dataset_path)
-        
-        # Set up algorithm registry
-        print(f"\n3. Setting up algorithms")
-        registry = setup_algorithm_registry()
+        dataset = load_dataset(config.dataset)
         
         # Create distance measure from config
+        print(f"\n3. Setting up algorithms")
         distance_measure = load_distance_measure(config.distance_measure)
         print(f"   ✓ Using {config.distance_measure} distance measure")
         
@@ -145,72 +148,26 @@ def run_benchmark_from_config(config_path: str, verbose: bool = True) -> None:
             combo_str = " + ".join([f"{k}:{v}" for k, v in combo.items()])
             print(f"      {i}. {combo_str}")
         
-        # Create and run benchmark
+        # Create and run simplified benchmark
         print(f"\n4. Running benchmark")
-        benchmark = PipelineBenchmark(registry)
-        benchmark.distance_measure = distance_measure  # Set distance measure from config
-        
-        results = benchmark.run_benchmark(config, dataset)
-        
-        # Generate summary statistics
-        print(f"\n5. Generating summary")
-        summary_stats = benchmark.get_summary_statistics()
+        benchmark = SimpleBenchmark(config, distance_measure)
+        results = benchmark.run(dataset)
         
         # Print summary
-        print("\n" + "="*60)
-        print("BENCHMARK SUMMARY")
-        print("="*60)
-        
-        print(f"Total runs: {summary_stats.get('total_runs', 0)}")
-        print(f"Successful runs: {summary_stats.get('successful_runs', 0)}")
-        print(f"Failed runs: {summary_stats.get('failed_runs', 0)}")
-        print(f"Success rate: {summary_stats.get('success_rate', 0):.1f}%")
-        
-        if 'avg_execution_time' in summary_stats:
-            print(f"\nTiming Results:")
-            print(f"Average execution time: {summary_stats['avg_execution_time']:.3f}s")
-            print(f"Fastest execution time: {summary_stats['min_execution_time']:.3f}s")
-            print(f"Slowest execution time: {summary_stats['max_execution_time']:.3f}s")
-            print(f"Total benchmark time: {summary_stats['total_benchmark_time']:.3f}s")
-        
-        if 'fastest_combination' in summary_stats:
-            fastest = summary_stats['fastest_combination']
-            print(f"\nFastest Algorithm Combination:")
-            combo_str = " + ".join([f"{k}:{v}" for k, v in fastest['algorithms'].items()])
-            print(f"  {combo_str}")
-            print(f"  Time: {fastest['time']:.3f}s")
-            if fastest['quality_scores']:
-                quality_str = ", ".join([f"{k}: {v:.3f}" for k, v in fastest['quality_scores'].items()])
-                print(f"  Quality: {quality_str}")
-        
-        if 'best_quality_combination' in summary_stats:
-            best_quality = summary_stats['best_quality_combination']
-            print(f"\nBest Quality Algorithm Combination:")
-            combo_str = " + ".join([f"{k}:{v}" for k, v in best_quality['algorithms'].items()])
-            print(f"  {combo_str}")
-            print(f"  Time: {best_quality['time']:.3f}s")
-            if best_quality['quality_scores']:
-                quality_str = ", ".join([f"{k}: {v:.3f}" for k, v in best_quality['quality_scores'].items()])
-                print(f"  Quality: {quality_str}")
-            print(f"  Metric used: {best_quality.get('metric_used', 'N/A')}")
+        print(f"\n5. Generating summary")
+        print_benchmark_summary(results, config)
         
         # Export results
         print(f"\n6. Exporting results")
-        BenchmarkResultExporter.export_results(
-            results, 
-            config.output_directory,
-            config.output_formats,
-            config.name
-        )
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        export_benchmark_results(results, config, f"_{timestamp}")
         
         print(f"\n✓ Benchmark completed successfully!")
         print(f"✓ Results exported to: {config.output_directory}")
         
     except Exception as e:
-        print(f"\n✗ Benchmark failed with error:")
-        print(f"  {str(e)}")
+        print(f"\n❌ Benchmark failed with error: {str(e)}")
         if verbose:
-            print(f"\nFull traceback:")
             traceback.print_exc()
         sys.exit(1)
 
@@ -243,7 +200,7 @@ Examples:
     args = parser.parse_args()
     
     # Run benchmark
-    run_benchmark_from_config(args.config, args.verbose)
+    run_benchmark(args.config, args.verbose)
 
 
 if __name__ == "__main__":
