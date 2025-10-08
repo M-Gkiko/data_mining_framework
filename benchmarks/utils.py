@@ -105,72 +105,6 @@ def export_results_csv(results: List[BenchmarkResult], output_path: str) -> None
     print(f"Results exported to CSV: {output_path}")
 
 
-def export_results_json(results: List[BenchmarkResult], output_path: str) -> None:
-    """Export benchmark results to JSON format."""
-    output_file = Path(output_path)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Convert results to JSON-serializable format
-    json_data = {
-        'benchmark_results': [],
-        'summary': {
-            'total_runs': len(results),
-            'successful_runs': len([r for r in results if r.success]),
-            'failed_runs': len([r for r in results if not r.success])
-        }
-    }
-    
-    for result in results:
-        result_data = {
-            'iteration': result.iteration,
-            'combination': result.combination,
-            'success': result.success,
-            'execution_time_seconds': round(result.execution_time, 6),
-            'quality_scores': result.quality_scores or {},
-            'error_message': result.error_message
-        }
-        json_data['benchmark_results'].append(result_data)
-    
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, indent=2, ensure_ascii=False)
-    
-    print(f"Results exported to JSON: {output_path}")
-
-
-def export_results_yaml(results: List[BenchmarkResult], output_path: str) -> None:
-    """Export benchmark results to YAML format."""
-    output_file = Path(output_path)
-    output_file.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Convert results to YAML-serializable format
-    yaml_data = {
-        'benchmark_results': [],
-        'summary': {
-            'total_runs': len(results),
-            'successful_runs': len([r for r in results if r.success]),
-            'failed_runs': len([r for r in results if not r.success])
-        }
-    }
-    
-    for result in results:
-        result_data = {
-            'iteration': result.iteration,
-            'combination': result.combination,
-            'success': result.success,
-            'execution_time_seconds': round(result.execution_time, 6),
-            'quality_scores': result.quality_scores or {},
-        }
-        if result.error_message:
-            result_data['error_message'] = result.error_message
-        
-        yaml_data['benchmark_results'].append(result_data)
-    
-    with open(output_file, 'w', encoding='utf-8') as f:
-        yaml.dump(yaml_data, f, default_flow_style=False, allow_unicode=True, indent=2)
-    
-    print(f"Results exported to YAML: {output_path}")
-
-
 def export_benchmark_results(results: List[BenchmarkResult], config: BenchmarkConfig, 
                             timestamp_suffix: str = "") -> None:
     """
@@ -188,8 +122,6 @@ def export_benchmark_results(results: List[BenchmarkResult], config: BenchmarkCo
     
     export_functions = {
         'csv': export_results_csv,
-        'json': export_results_json,
-        'yaml': export_results_yaml
     }
     
     for format_name in config.output_formats:

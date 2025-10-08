@@ -15,15 +15,11 @@ from implementations.pipelines import DRAdapter, ClusteringAdapter, DRQualityAda
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 
-# Import algorithm classes
-from implementations.clustering.hierarchical import HierarchicalClustering
-from implementations.clustering.dbscan import DBSCANClustering
-from implementations.clustering.quality.calinski_harabasz import CalinskiHarabaszIndex
-from implementations.clustering.quality.davies_bouldin import DaviesBouldinIndex
+from .registry import create_algorithm, create_adapter, create_distance_measure
 
 
 class BenchmarkConfig(BaseModel):
-    """Simplified benchmark configuration with automatic validation."""
+    """ benchmark configuration with automatic validation."""
     
     name: str
     dataset: str = Field(..., description="Path to dataset file")
@@ -79,8 +75,7 @@ class BenchmarkConfig(BaseModel):
 
 @dataclass
 class BenchmarkResult:
-    """Simplified benchmark result."""
-    
+    """Result of a single benchmark run."""    
     combination: Dict[str, str]
     execution_time: float
     success: bool
@@ -101,58 +96,6 @@ class BenchmarkResult:
         return "_".join(self.combination.values())
 
 
-# Factory functions
-def create_clustering_algorithm(name: str, **params):
-    """Create clustering algorithm by name."""
-    algorithms = {
-        'Hierarchical': HierarchicalClustering,
-        'DBSCAN': DBSCANClustering,
-    }
-    if name not in algorithms:
-        raise ValueError(f"Unknown clustering algorithm: {name}. Available: {list(algorithms.keys())}")
-    return algorithms[name](**params)
-
-
-def create_quality_measure(name: str, **params):
-    """Create quality measure by name."""
-    measures = {
-        'Calinski_Harabasz': CalinskiHarabaszIndex,
-        'Davies_Bouldin': DaviesBouldinIndex,
-    }
-    if name not in measures:
-        raise ValueError(f"Unknown quality measure: {name}. Available: {list(measures.keys())}")
-    return measures[name](**params)
-
-
-def create_algorithm(step_type: str, algorithm_name: str, **params):
-    """Create algorithm by step type and name."""
-    if step_type == "clustering":
-        return create_clustering_algorithm(algorithm_name, **params)
-    elif step_type == "clustering_quality":
-        return create_quality_measure(algorithm_name, **params)
-    else:
-        raise ValueError(f"Unknown step type: {step_type}")
-
-
-def create_adapter(step_type: str, algorithm, distance_measure: Optional[DistanceMeasure] = None, 
-                  dataset: Optional[Dataset] = None):
-    """Create appropriate adapter for algorithm type."""
-    if step_type == "dimensionality_reduction":
-        return DRAdapter(algorithm, distance_measure=distance_measure, 
-                        name=f"DR_{algorithm.__class__.__name__}")
-    elif step_type == "clustering":
-        return ClusteringAdapter(algorithm, distance_measure=distance_measure, 
-                                name=f"Clustering_{algorithm.__class__.__name__}")
-    elif step_type == "dr_quality":
-        return DRQualityAdapter(algorithm, dataset, distance_measure=distance_measure, 
-                               name=f"DRQuality_{algorithm.__class__.__name__}")
-    elif step_type == "clustering_quality":
-        return ClusteringQualityAdapter(algorithm, distance_measure=distance_measure, 
-                                       name=f"ClusteringQuality_{algorithm.__class__.__name__}")
-    else:
-        raise ValueError(f"Unknown pipeline step type: {step_type}")
-
-
 def build_benchmark_pipeline(config: BenchmarkConfig, combination: Dict[str, str], 
                            distance_measure: Optional[DistanceMeasure] = None,
                            dataset: Optional[Dataset] = None) -> Pipeline:
@@ -165,6 +108,10 @@ def build_benchmark_pipeline(config: BenchmarkConfig, combination: Dict[str, str
         algorithm_name = combination[step_type]
         params = step.get('params', {}).get(algorithm_name, {})
         
+        # Pass distance measure to clustering algorithms that need it
+        if step_type == "clustering" and distance_measure is not None:
+            params['distance_measure'] = distance_measure
+        
         # Create algorithm and adapter
         algorithm = create_algorithm(step_type, algorithm_name, **params)
         adapter = create_adapter(step_type, algorithm, distance_measure, dataset)
@@ -174,18 +121,18 @@ def build_benchmark_pipeline(config: BenchmarkConfig, combination: Dict[str, str
 
 
 class SimpleBenchmark:
-    """Simplified benchmark runner with streamlined execution."""
+    """ Benchmark runner with streamlined execution."""
     
-    def __init__(self, config: BenchmarkConfig, distance_measure: Optional[DistanceMeasure] = None):
+    def __init__(self, config: BenchmarkConfig):
         """
         Initialize simplified benchmark.
         
         Args:
             config: Benchmark configuration
-            distance_measure: Distance measure to use for algorithms
         """
         self.config = config
-        self.distance_measure = distance_measure
+        # Use registry to create distance measure - same pattern as algorithms!
+        self.distance_measure = create_distance_measure(config.distance_measure)
         self.results: List[BenchmarkResult] = []
     
     def run(self, dataset: Dataset) -> List[BenchmarkResult]:
@@ -267,7 +214,12 @@ class SimpleBenchmark:
         if isinstance(pipeline_output, dict):
             # Look for quality scores in the output
             for key, value in pipeline_output.items():
-                if key.startswith('ClusteringQuality_') or key.startswith('DRQuality_'):
+                # Check for various quality score key patterns
+                if (key.startswith('ClusteringQuality_') or 
+                    key.startswith('DRQuality_') or
+                    key.startswith('clustering_quality_') or
+                    key.startswith('dr_quality_') or
+                    'quality' in key.lower()):
                     if isinstance(value, (int, float)):
                         quality_scores[key] = float(value)
                 elif key == 'quality_scores' and isinstance(value, dict):

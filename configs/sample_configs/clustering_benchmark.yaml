@@ -1,6 +1,3 @@
-# Benchmark configuration for testing Hierarchical and DBSCAN clustering
-# with Calinski-Harabasz and Davies-Bouldin quality measures
-
 benchmark:
   name: "Iris_Clustering_Benchmark"
   dataset: "data/iris.csv"  # Famous Iris dataset with 3 natural clusters
@@ -33,7 +30,7 @@ iterations: 3  # Run each combination 3 times for statistical reliability
 # Output configuration
 output:
   directory: "benchmark_results"
-  format: ["csv", "json"]  # Export to both CSV and JSON
+  format: ["csv"]  
 
 # Additional benchmark settings
 timeout: 300  # 5 minutes timeout per benchmark run

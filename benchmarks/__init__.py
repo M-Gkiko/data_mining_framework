@@ -1,7 +1,6 @@
 """
-Simplified benchmark package for systematic algorithm comparison.
 
-This package provides streamlined tools for comparing different clustering,
+This package provides tools for comparing different clustering,
 dimensionality reduction, and quality measurement algorithms.
 """
 
@@ -9,10 +8,14 @@ from .core import (
     BenchmarkConfig,
     BenchmarkResult,
     SimpleBenchmark,
-    create_clustering_algorithm,
-    create_quality_measure,
-    create_algorithm,
     build_benchmark_pipeline
+)
+
+from .registry import (
+    create_algorithm,
+    create_adapter,
+    create_distance_measure,
+    get_available_algorithms
 )
 
 from .utils import (
@@ -22,29 +25,21 @@ from .utils import (
     print_benchmark_summary
 )
 
-# Backward compatibility aliases
-BenchmarkConfiguration = BenchmarkConfig
-PipelineBenchmark = SimpleBenchmark
-BenchmarkConfigLoader = type('BenchmarkConfigLoader', (), {
-    'load_config': staticmethod(load_benchmark_config)
-})
 
 __all__ = [
-    # New simplified API
+    # Core classes
     'BenchmarkConfig',
     'BenchmarkResult', 
     'SimpleBenchmark',
+    'build_benchmark_pipeline',
+    # Registry functions
+    'create_algorithm',
+    'create_adapter',
+    'create_distance_measure',
+    'get_available_algorithms',
+    # Utility functions
     'load_benchmark_config',
     'export_benchmark_results',
     'validate_benchmark_config',
     'print_benchmark_summary',
-    'create_clustering_algorithm',
-    'create_quality_measure',
-    'create_algorithm',
-    'build_benchmark_pipeline',
-    
-    # Backward compatibility
-    'BenchmarkConfiguration',
-    'PipelineBenchmark',
-    'BenchmarkConfigLoader'
 ]
