@@ -14,14 +14,15 @@ class ClusteringAlgorithm(ABC):
     """
     
     @abstractmethod
-    def fit(self, dataset: Dataset, distance_measure: DistanceMeasure, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (DistanceMeasure): The distance measure to use
-            **kwargs: Additional algorithm-specific parameters
+            **kwargs: Optional hyperparameters including:
+                - distance_measure (DistanceMeasure): The distance measure to use
+                - Any other algorithm-specific parameters
             
         Raises:
             ValueError: If dataset is empty or invalid

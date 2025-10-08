@@ -51,14 +51,16 @@ class DBSCANClustering(ClusteringAlgorithm):
         
         return distance_matrix
     
-    def fit(self, dataset: Dataset, distance_measure: DistanceMeasure, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the DBSCAN clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (DistanceMeasure): The distance measure to use
-            **kwargs: Additional parameters (eps, min_samples can be overridden)
+            **kwargs: Optional hyperparameters including:
+                - distance_measure (DistanceMeasure): The distance measure to use
+                - eps (float): Maximum distance between samples for neighborhood
+                - min_samples (int): Minimum samples in neighborhood for core point
             
         Raises:
             ValueError: If dataset is empty or invalid
@@ -66,6 +68,8 @@ class DBSCANClustering(ClusteringAlgorithm):
         if dataset.get_rows() == 0:
             raise ValueError("Dataset is empty")
         
+        # Extract hyperparameters from kwargs
+        distance_measure = kwargs.get('distance_measure')
         eps = kwargs.get('eps', self.eps)
         min_samples = kwargs.get('min_samples', self.min_samples)
         
@@ -79,17 +83,28 @@ class DBSCANClustering(ClusteringAlgorithm):
         if data.ndim != 2:
             raise ValueError("Data must be a 2D array")
         
-        # Build precomputed distance matrix using custom distance measure
-        distance_matrix = self._build_distance_matrix(data, distance_measure)
-        
-        # Initialize sklearn DBSCAN with precomputed metric
-        self._dbscan = DBSCAN(
-            eps=eps,
-            min_samples=min_samples,
-            metric='precomputed'
-        )
-        
-        self._dbscan.fit(distance_matrix)
+        # Handle distance measure - use precomputed if provided, otherwise use euclidean
+        if distance_measure is not None:
+            # Build precomputed distance matrix using custom distance measure
+            distance_matrix = self._build_distance_matrix(data, distance_measure)
+            
+            # Initialize sklearn DBSCAN with precomputed metric
+            self._dbscan = DBSCAN(
+                eps=eps,
+                min_samples=min_samples,
+                metric='precomputed'
+            )
+            
+            self._dbscan.fit(distance_matrix)
+        else:
+            # Use sklearn's default euclidean distance
+            self._dbscan = DBSCAN(
+                eps=eps,
+                min_samples=min_samples,
+                metric='euclidean'
+            )
+            
+            self._dbscan.fit(data)
         
         self._labels = self._dbscan.labels_.tolist()
         self._fitted = True

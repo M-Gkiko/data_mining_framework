@@ -13,11 +13,13 @@ class HierarchicalClustering(ClusteringAlgorithm):
     Adapter for sklearn's AgglomerativeClustering that follows our
     ClusteringAlgorithm interface.
 
+    Defaults to metric='precomputed' to encourage use of custom DistanceMeasures.
+
     Notes:
-    - To use a custom DistanceMeasure, set metric="precomputed" and we will
-      build the full distance matrix using the provided DistanceMeasure.
-    - 'ward' linkage requires Euclidean distances and does NOT work with
-      'precomputed'. If linkage="ward", we will force metric="euclidean".
+    - Default behavior uses metric='precomputed' with custom distance measures
+    - 'ward' linkage is incompatible with 'precomputed' metric - explicit error thrown
+    - To use sklearn built-in metrics, explicitly set metric (e.g., 'euclidean') 
+      and do NOT provide distance_measure parameter
     - Newer sklearn uses 'metric' instead of 'affinity'. We support 'metric'
       (preferred) and map 'affinity' -> 'metric' for backward compatibility.
     """
@@ -26,8 +28,8 @@ class HierarchicalClustering(ClusteringAlgorithm):
         # Defaults; override via kwargs
         self.params = {
             "n_clusters": 2,
-            "linkage": "ward",        # 'ward', 'complete', 'average', 'single'
-            "metric": "euclidean",    # 'euclidean', 'manhattan', 'cosine', 'precomputed'
+            "linkage": "complete",    # 'complete', 'average', 'single' (ward not compatible with precomputed)
+            "metric": "precomputed",  # Default to precomputed to use custom distance measures
         }
         # Back-compat: allow 'affinity' as alias of 'metric'
         if "affinity" in kwargs and "metric" not in kwargs:
@@ -48,12 +50,32 @@ class HierarchicalClustering(ClusteringAlgorithm):
                 D[j, i] = d
         return D
 
-    def fit(self, dataset: Dataset, distance_measure: DistanceMeasure, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
+        """
+        Fit the hierarchical clustering algorithm to the given dataset.
+        
+        Args:
+            dataset (Dataset): The dataset to cluster
+            **kwargs: Optional hyperparameters including:
+                - distance_measure (DistanceMeasure): Custom distance measure (required for default metric='precomputed')
+                - n_clusters (int): Number of clusters to find (default: 2)
+                - linkage (str): Linkage criterion ('complete', 'average', 'single') (default: 'complete')
+                - metric (str): Distance metric ('precomputed', 'euclidean', 'manhattan', 'cosine') (default: 'precomputed')
+                
+        Raises:
+            ValueError: If dataset is invalid or incompatible parameters are provided
+                       (e.g., linkage='ward' with metric='precomputed', or missing distance_measure with metric='precomputed')
+        """
+        distance_measure = kwargs.get('distance_measure') #(optional)
+        
         # Allow runtime overrides
         # Back-compat mapping if someone passes 'affinity'
         if "affinity" in kwargs and "metric" not in kwargs:
             kwargs = {**kwargs, "metric": kwargs.pop("affinity")}
-        self.params.update(kwargs)
+        
+        # Remove distance_measure from kwargs before updating params
+        fit_kwargs = {k: v for k, v in kwargs.items() if k != 'distance_measure'}
+        self.params.update(fit_kwargs)
 
         X = dataset.get_data()
         if X is None:
@@ -65,15 +87,27 @@ class HierarchicalClustering(ClusteringAlgorithm):
         linkage = self.params["linkage"]
         metric = self.params["metric"]
 
-        # Ward requires Euclidean distances and disallows precomputed
-        if linkage == "ward":
-            if metric == "precomputed":
-                raise ValueError("linkage='ward' is incompatible with metric='precomputed'. "
-                                 "Use linkage in {'complete','average','single'} for precomputed.")
-            metric = "euclidean"  # force compatibility
+        # Explicit error checking for incompatible combinations
+        if linkage == "ward" and metric == "precomputed":
+            raise ValueError(
+                "linkage='ward' is incompatible with metric='precomputed'. "
+                "Either use linkage in {'complete', 'average', 'single'} with metric='precomputed', "
+                "or use linkage='ward' with metric='euclidean'"
+            )
+
+        if metric != "precomputed" and distance_measure is not None:
+            raise ValueError(
+                f"distance_measure provided but metric='{metric}'. "
+                "To use custom distance measures, set metric='precomputed'"
+            )
 
         # Prepare data or distance matrix
         if metric == "precomputed":
+            if distance_measure is None:
+                raise ValueError(
+                    "metric='precomputed' requires a distance_measure parameter. "
+                    "Either provide distance_measure or use a built-in metric like 'euclidean'"
+                )
             D = self._build_distance_matrix(X, distance_measure)
             self._model = AgglomerativeClustering(
                 n_clusters=self.params["n_clusters"],
