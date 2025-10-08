@@ -2,11 +2,11 @@ from typing import List
 import numpy as np
 from sklearn.metrics import davies_bouldin_score
 
-from core.clustering_quality_measure import QualityMeasure
+from core.clustering_quality_measure import CLQualityMeasure
 from core.dataset import Dataset
 
 
-class DaviesBouldinIndex(QualityMeasure):
+class DaviesBouldinIndex(CLQualityMeasure):
     """
     The Davies-Bouldin Index (DBI) is a metric for evaluating clustering algorithms.
     - Lower values indicate better clustering (0 = perfect).

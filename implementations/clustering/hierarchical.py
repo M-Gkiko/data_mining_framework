@@ -3,13 +3,13 @@ from typing import List, Optional, Any
 import numpy as np
 
 from sklearn.cluster import AgglomerativeClustering
-from core.clustering_algorithm import ClusteringAlgorithm
+from core.clustering import Clustering
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 from utils.distance_utils import build_distance_matrix
 
 
-class HierarchicalClustering(ClusteringAlgorithm):
+class HierarchicalClustering(Clustering):
     """
     Adapter for sklearn's AgglomerativeClustering that follows our
     ClusteringAlgorithm interface.

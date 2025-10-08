@@ -1,13 +1,13 @@
 import numpy as np
 from typing import List, Optional, Any
 from sklearn.cluster import DBSCAN
-from core.clustering_algorithm import ClusteringAlgorithm
+from core.clustering import Clustering
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 from utils.distance_utils import build_distance_matrix
 
 
-class DBSCANClustering(ClusteringAlgorithm):
+class DBSCANClustering(Clustering):
     """    
     DBSCAN (Density-Based Spatial Clustering of Applications with Noise) groups
     together points that are closely packed while marking outliers as noise.

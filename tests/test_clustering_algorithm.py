@@ -6,7 +6,7 @@ import pytest
 import unittest
 from typing import Optional
 from unittest.mock import Mock, MagicMock
-from core.clustering_algorithm import ClusteringAlgorithm
+from core.clustering import Clustering
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 
@@ -17,17 +17,17 @@ class TestClusteringAlgorithm(unittest.TestCase):
     def test_clustering_algorithm_is_abstract(self):
         """Test that ClusteringAlgorithm cannot be instantiated directly."""
         with self.assertRaises(TypeError):
-            ClusteringAlgorithm()
+            Clustering()
     
     def test_clustering_algorithm_interface_methods_exist(self):
         """Test that all required abstract methods are defined."""
         required_methods = ['fit', 'get_labels']
         for method in required_methods:
-            self.assertTrue(hasattr(ClusteringAlgorithm, method))
-            self.assertTrue(callable(getattr(ClusteringAlgorithm, method)))
+            self.assertTrue(hasattr(Clustering, method))
+            self.assertTrue(callable(getattr(Clustering, method)))
 
 
-class MockClusteringAlgorithm(ClusteringAlgorithm):
+class MockClusteringAlgorithm(Clustering):
     """Mock implementation for testing purposes."""
     
     def __init__(self):
@@ -59,7 +59,7 @@ class TestMockClusteringAlgorithm(unittest.TestCase):
     
     def test_mock_clustering_algorithm_instantiation(self):
         """Test that mock clustering algorithm can be instantiated."""
-        self.assertIsInstance(self.algorithm, ClusteringAlgorithm)
+        self.assertIsInstance(self.algorithm, Clustering)
     
     def test_get_labels_before_fitting(self):
         """Test get_labels returns None before fitting."""

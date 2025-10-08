@@ -1,13 +1,13 @@
 from .dataset import Dataset
 from .distance_measure import DistanceMeasure
-from .clustering_algorithm import ClusteringAlgorithm
-from .clustering_quality_measure import QualityMeasure
+from .clustering import Clustering
+from .clustering_quality_measure import CLQualityMeasure
 
 __all__ = [
     'Dataset',
     'DistanceMeasure', 
-    'ClusteringAlgorithm',
-    'QualityMeasure'
+    'Clustering',
+    'CLQualityMeasure'
 ]
 
 __version__ = '0.1.0'

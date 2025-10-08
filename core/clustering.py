@@ -5,7 +5,7 @@ from .dataset import Dataset
 from .distance_measure import DistanceMeasure
 
 
-class ClusteringAlgorithm(ABC):
+class Clustering(ABC):
     """
     Abstract base class for clustering algorithms in the data mining framework.
     

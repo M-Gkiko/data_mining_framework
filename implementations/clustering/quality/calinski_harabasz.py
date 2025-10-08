@@ -2,11 +2,11 @@ from typing import List
 import numpy as np
 from sklearn.metrics import calinski_harabasz_score
 
-from core.clustering_quality_measure import QualityMeasure
+from core.clustering_quality_measure import CLQualityMeasure
 from core.dataset import Dataset
 
 
-class CalinskiHarabaszIndex(QualityMeasure):
+class CalinskiHarabaszIndex(CLQualityMeasure):
     """
     
     The Calinski-Harabasz Index is also known as the Variance Ratio Criterion.
