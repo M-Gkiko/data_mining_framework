@@ -1,34 +1,34 @@
 from typing import Any
 import numpy as np
-from sklearn.manifold import TSNE
+from sklearn.manifold import MDS
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 from core.dimensionality_reduction import DimensionalityReduction
 from utils.distance_utils import build_distance_matrix
 
 
-class TSNEProjection(DimensionalityReduction):
+class MDSProjection(DimensionalityReduction):
     """
-    Adapter for sklearn's t-SNE restricted to custom DistanceMeasure implementations.
+    Adapter for sklearn's Multidimensional Scaling (MDS)
+    restricted to custom DistanceMeasure implementations.
 
-    - Uses only DistanceMeasure from our framework (no built-in sklearn metrics).
+    - Uses our DistanceMeasure to build a precomputed distance matrix.
     - Returns a 2D numpy array (rows = samples, columns = components).
     """
 
     def __init__(self, **kwargs: Any):
-        # Force custom distance computation
+        # Default parameters for MDS
         self.params = {
             "n_components": 2,
-            "perplexity": 30,
-            "learning_rate": "auto",
-            "n_iter": 1000,
-            "metric": "precomputed",
+            "dissimilarity": "precomputed",
             "random_state": 42,
+            "max_iter": 300,
+            "n_init": 4,
         }
 
-        # Prevent overriding metric
-        if "metric" in kwargs:
-            raise ValueError("Custom 'metric' not allowed. Use DistanceMeasure instead.")
+        # Prevent overriding dissimilarity
+        if "dissimilarity" in kwargs:
+            raise ValueError("Custom 'dissimilarity' not allowed. Use DistanceMeasure instead.")
         self.params.update(kwargs)
 
         self.model = None
@@ -38,22 +38,22 @@ class TSNEProjection(DimensionalityReduction):
         self, dataset: Dataset, distance_measure: DistanceMeasure | None = None, **kwargs: Any
     ) -> np.ndarray:
         """
-        Perform t-SNE projection using a custom DistanceMeasure.
+        Perform MDS projection using only a custom DistanceMeasure.
         """
         self.params.update(kwargs)
 
         if distance_measure is None:
-            raise ValueError("A DistanceMeasure instance must be provided for TSNEProjection.")
+            raise ValueError("A DistanceMeasure instance must be provided for MDSProjection.")
 
         X = np.asarray(dataset.get_data(), dtype=float)
         if X.ndim != 2 or X.shape[0] == 0:
             raise ValueError("Dataset must be a 2D array with at least one sample.")
 
-        # Build pairwise distance matrix using our shared utility
+        # Compute distance matrix via shared utility
         dist_matrix = build_distance_matrix(X, distance_measure)
 
-        # Fit and transform with sklearn's t-SNE
-        self.model = TSNE(**self.params)
+        # Fit and transform with sklearn's MDS
+        self.model = MDS(**self.params)
         self.projection = self.model.fit_transform(dist_matrix)
 
         return np.asarray(self.projection)
