@@ -11,77 +11,93 @@ class DBSCANClustering(Clustering):
     """    
     DBSCAN (Density-Based Spatial Clustering of Applications with Noise) groups
     together points that are closely packed while marking outliers as noise.
+    
+    Defaults to metric='euclidean' but can use custom distance measures via 
+    metric='precomputed' when distance_measure is provided.
     """
     
-    def __init__(self, eps: float = 0.5, min_samples: int = 5):
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, eps: float = 0.5, min_samples: int = 5, **kwargs: Any):
         """
         Initialize DBSCAN clustering with parameters.
         
         Args:
+            distance_measure (Optional[DistanceMeasure]): Custom distance measure to use.
+                                                        If provided, uses metric='precomputed'
             eps (float): Maximum distance between two samples for neighborhood
                         (epsilon radius). Default: 0.5
             min_samples (int): Minimum number of samples in neighborhood to
                              form a core point. Default: 5
+            **kwargs: Additional parameters
         """
-        self.eps = eps
-        self.min_samples = min_samples
+        self.distance_measure = distance_measure
+        self.params = {
+            "eps": eps,
+            "min_samples": min_samples,
+            "metric": "precomputed" if distance_measure is not None else "euclidean"
+        }
+        self.params.update(kwargs)
+        
         self._dbscan = None
         self._labels = None
         self._fitted = False
     
-    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the DBSCAN clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None, uses euclidean)
             **kwargs: Optional hyperparameters including:
                 - eps (float): Maximum distance between samples for neighborhood
                 - min_samples (int): Minimum samples in neighborhood for core point
+                - metric (str): Distance metric ('euclidean', 'manhattan', 'precomputed')
             
         Raises:
             ValueError: If dataset is empty or invalid
         """
-        if dataset.get_rows() == 0:
-            raise ValueError("Dataset is empty")
+        # Allow runtime parameter overrides
+        self.params.update(kwargs)
         
-        # Extract hyperparameters from kwargs
-        eps = kwargs.get('eps', self.eps)
-        min_samples = kwargs.get('min_samples', self.min_samples)
+        X = dataset.get_data()
+        if X is None:
+            raise ValueError("Dataset.get_data() returned None.")
+        X = np.asarray(X)
+        if X.ndim != 2 or X.shape[0] == 0:
+            raise ValueError("Dataset must be a 2D array with at least one row.")
         
-        data = dataset.get_data()
+        eps = self.params["eps"]
+        min_samples = self.params["min_samples"]
+        metric = self.params["metric"]
         
-        if hasattr(data, 'values'):
-            data = data.values
+        # Handle distance measure parameter validation
+        if metric != "precomputed" and self.distance_measure is not None:
+            raise ValueError(
+                f"distance_measure provided but metric='{metric}'. "
+                "To use custom distance measures, set metric='precomputed'"
+            )
         
-        data = np.asarray(data)
-        
-        if data.ndim != 2:
-            raise ValueError("Data must be a 2D array")
-        
-        # Handle distance measure - use precomputed if provided, otherwise use euclidean
-        if distance_measure is not None:
-            # Build precomputed distance matrix using custom distance measure
-            distance_matrix = build_distance_matrix(data, distance_measure)
-            
-            # Initialize sklearn DBSCAN with precomputed metric
+        # Prepare data or distance matrix
+        if metric == "precomputed":
+            if self.distance_measure is None:
+                raise ValueError(
+                    "metric='precomputed' requires a distance_measure parameter. "
+                    "Either provide distance_measure in constructor or use a built-in metric like 'euclidean'"
+                )
+            D = build_distance_matrix(X, self.distance_measure)
             self._dbscan = DBSCAN(
                 eps=eps,
                 min_samples=min_samples,
-                metric='precomputed'
+                metric="precomputed"
             )
-            
-            self._dbscan.fit(distance_matrix)
+            self._dbscan.fit(D)
         else:
-            # Use sklearn's default euclidean distance
+            # Direct metrics handled by sklearn internally
             self._dbscan = DBSCAN(
                 eps=eps,
                 min_samples=min_samples,
-                metric='euclidean'
+                metric=metric
             )
-            
-            self._dbscan.fit(data)
+            self._dbscan.fit(X)
         
         self._labels = self._dbscan.labels_.tolist()
         self._fitted = True

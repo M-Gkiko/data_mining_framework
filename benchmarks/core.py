@@ -108,13 +108,21 @@ def build_benchmark_pipeline(config: BenchmarkConfig, combination: Dict[str, str
         algorithm_name = combination[step_type]
         params = step.get('params', {}).get(algorithm_name, {})
         
-        # Pass distance measure to clustering algorithms that need it
-        if step_type == "clustering" and distance_measure is not None:
-            params['distance_measure'] = distance_measure
+        # Handle algorithm-specific distance measures
+        algorithm_distance_measure = distance_measure  # Default to global distance measure
+        if 'distance_measure' in params:
+            # Create the specific distance measure for this algorithm
+            from .registry import create_distance_measure
+            algorithm_distance_measure = create_distance_measure(params['distance_measure'])
+            params = {k: v for k, v in params.items() if k != 'distance_measure'}
+        
+        # For clustering and DR algorithms, pass distance_measure to constructor
+        if step_type in ["clustering", "dimensionality_reduction"] and algorithm_distance_measure is not None:
+            params['distance_measure'] = algorithm_distance_measure
         
         # Create algorithm and adapter
         algorithm = create_algorithm(step_type, algorithm_name, **params)
-        adapter = create_adapter(step_type, algorithm, distance_measure, dataset)
+        adapter = create_adapter(step_type, algorithm, algorithm_distance_measure, dataset)
         pipeline.add_component(adapter)
     
     return pipeline

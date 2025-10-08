@@ -1,7 +1,3 @@
-"""
-Adapter for dimensionality reduction algorithms in pipelines.
-"""
-
 from typing import Any, Optional
 import numpy as np
 from core.pipeline import PipelineComponent
@@ -64,7 +60,6 @@ class DRAdapter(PipelineComponent):
             # Execute dimensionality reduction
             reduced_data = self.dr_algorithm.fit_transform(
                 dataset, 
-                self.distance_measure, 
                 **self.algorithm_params
             )
             

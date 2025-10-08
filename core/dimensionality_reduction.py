@@ -11,13 +11,23 @@ class DimensionalityReduction(ABC):
     """
 
     @abstractmethod
-    def fit_transform(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> np.ndarray:
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+        """
+        Initialize the dimensionality reduction algorithm with configuration parameters.
+        
+        Args:
+            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None)
+            **kwargs: Additional algorithm-specific hyperparameters
+        """
+        pass
+
+    @abstractmethod
+    def fit_transform(self, dataset: Dataset, **kwargs: Any) -> np.ndarray:
         """
         Reduce the dimensionality of the given dataset.
 
         Args:
             dataset (Dataset): The input dataset.
-            distance_measure (Optional[DistanceMeasure]): An optional distance measure to use.
             **kwargs: Algorithm-specific hyperparameters.
 
         Returns:

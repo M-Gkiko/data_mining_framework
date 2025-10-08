@@ -1,7 +1,3 @@
-"""
-Adapter for clustering algorithms in pipelines.
-"""
-
 from typing import Any, Optional, Dict, Union
 import numpy as np
 from core.pipeline import PipelineComponent
@@ -69,10 +65,9 @@ class ClusteringAdapter(PipelineComponent):
             raise ValueError(f"ClusteringAdapter expects Dataset or np.ndarray, got {type(input_data)}")
         
         try:
-            # Execute clustering
+            # Execute clustering (distance_measure is now set in constructor)
             self.clustering_algorithm.fit(
                 dataset,
-                self.distance_measure,
                 **self.algorithm_params
             )
             

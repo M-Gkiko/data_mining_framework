@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import numpy as np
 from sklearn.manifold import MDS
 from core.dataset import Dataset
@@ -16,7 +16,10 @@ class MDSProjection(DimensionalityReduction):
     - Returns a 2D numpy array (rows = samples, columns = components).
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any):
+        # Store distance measure
+        self.distance_measure = distance_measure
+        
         # Default parameters for MDS
         self.params = {
             "n_components": 2,
@@ -34,23 +37,21 @@ class MDSProjection(DimensionalityReduction):
         self.model = None
         self.projection = None
 
-    def fit_transform(
-        self, dataset: Dataset, distance_measure: DistanceMeasure | None = None, **kwargs: Any
-    ) -> np.ndarray:
+    def fit_transform(self, dataset: Dataset, **kwargs: Any) -> np.ndarray:
         """
         Perform MDS projection using only a custom DistanceMeasure.
         """
         self.params.update(kwargs)
 
-        if distance_measure is None:
-            raise ValueError("A DistanceMeasure instance must be provided for MDSProjection.")
+        if self.distance_measure is None:
+            raise ValueError("A DistanceMeasure instance must be provided for MDSProjection in constructor.")
 
         X = np.asarray(dataset.get_data(), dtype=float)
         if X.ndim != 2 or X.shape[0] == 0:
             raise ValueError("Dataset must be a 2D array with at least one sample.")
 
         # Compute distance matrix via shared utility
-        dist_matrix = build_distance_matrix(X, distance_measure)
+        dist_matrix = build_distance_matrix(X, self.distance_measure)
 
         # Fit and transform with sklearn's MDS
         self.model = MDS(**self.params)

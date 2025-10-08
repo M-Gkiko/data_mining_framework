@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import numpy as np
 from sklearn.manifold import TSNE
 from core.dataset import Dataset
@@ -15,7 +15,10 @@ class TSNEProjection(DimensionalityReduction):
     - Returns a 2D numpy array (rows = samples, columns = components).
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any):
+        # Store distance measure
+        self.distance_measure = distance_measure
+        
         # Force custom distance computation
         self.params = {
             "n_components": 2,
@@ -34,23 +37,21 @@ class TSNEProjection(DimensionalityReduction):
         self.model = None
         self.projection = None
 
-    def fit_transform(
-        self, dataset: Dataset, distance_measure: DistanceMeasure | None = None, **kwargs: Any
-    ) -> np.ndarray:
+    def fit_transform(self, dataset: Dataset, **kwargs: Any) -> np.ndarray:
         """
         Perform t-SNE projection using a custom DistanceMeasure.
         """
         self.params.update(kwargs)
 
-        if distance_measure is None:
-            raise ValueError("A DistanceMeasure instance must be provided for TSNEProjection.")
+        if self.distance_measure is None:
+            raise ValueError("A DistanceMeasure instance must be provided for TSNEProjection in constructor.")
 
         X = np.asarray(dataset.get_data(), dtype=float)
         if X.ndim != 2 or X.shape[0] == 0:
             raise ValueError("Dataset must be a 2D array with at least one sample.")
 
         # Build pairwise distance matrix using our shared utility
-        dist_matrix = build_distance_matrix(X, distance_measure)
+        dist_matrix = build_distance_matrix(X, self.distance_measure)
 
         # Fit and transform with sklearn's t-SNE
         self.model = TSNE(**self.params)

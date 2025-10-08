@@ -1,7 +1,3 @@
-"""
-Adapter for clustering quality measures in pipelines.
-"""
-
 from typing import Any, Dict, Optional
 from core.pipeline import PipelineComponent
 from core.clustering_quality_measure import ClusteringQualityMeasure

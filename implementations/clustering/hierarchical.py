@@ -25,12 +25,15 @@ class HierarchicalClustering(Clustering):
       (preferred) and map 'affinity' -> 'metric' for backward compatibility.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any):
+        # Store distance measure
+        self.distance_measure = distance_measure
+        
         # Defaults; override via kwargs
         self.params = {
             "n_clusters": 2,
             "linkage": "complete",    # 'complete', 'average', 'single' (ward not compatible with precomputed)
-            "metric": "precomputed",  # Default to precomputed to use custom distance measures
+            "metric": "precomputed" if distance_measure is not None else "euclidean",  # Use precomputed when custom distance provided
         }
         # Back-compat: allow 'affinity' as alias of 'metric'
         if "affinity" in kwargs and "metric" not in kwargs:
@@ -40,13 +43,12 @@ class HierarchicalClustering(Clustering):
         self._labels: Optional[List[int]] = None
         self._model: Optional[AgglomerativeClustering] = None
 
-    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the hierarchical clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (Optional[DistanceMeasure]): Custom distance measure (required for default metric='precomputed')
             **kwargs: Optional hyperparameters including:
                 - n_clusters (int): Number of clusters to find (default: 2)
                 - linkage (str): Linkage criterion ('complete', 'average', 'single') (default: 'complete')
@@ -62,9 +64,7 @@ class HierarchicalClustering(Clustering):
         if "affinity" in kwargs and "metric" not in kwargs:
             kwargs = {**kwargs, "metric": kwargs.pop("affinity")}
         
-        # Remove distance_measure from kwargs before updating params
-        fit_kwargs = {k: v for k, v in kwargs.items() if k != 'distance_measure'}
-        self.params.update(fit_kwargs)
+        self.params.update(kwargs)
 
         X = dataset.get_data()
         if X is None:
@@ -84,7 +84,7 @@ class HierarchicalClustering(Clustering):
                 "or use linkage='ward' with metric='euclidean'"
             )
 
-        if metric != "precomputed" and distance_measure is not None:
+        if metric != "precomputed" and self.distance_measure is not None:
             raise ValueError(
                 f"distance_measure provided but metric='{metric}'. "
                 "To use custom distance measures, set metric='precomputed'"
@@ -92,12 +92,12 @@ class HierarchicalClustering(Clustering):
 
         # Prepare data or distance matrix
         if metric == "precomputed":
-            if distance_measure is None:
+            if self.distance_measure is None:
                 raise ValueError(
                     "metric='precomputed' requires a distance_measure parameter. "
-                    "Either provide distance_measure or use a built-in metric like 'euclidean'"
+                    "Either provide distance_measure in constructor or use a built-in metric like 'euclidean'"
                 )
-            D = build_distance_matrix(X, distance_measure)
+            D = build_distance_matrix(X, self.distance_measure)
             self._model = AgglomerativeClustering(
                 n_clusters=self.params["n_clusters"],
                 linkage=linkage,

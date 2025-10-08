@@ -1,7 +1,3 @@
-"""
-Adapter for dimensionality reduction quality measures in pipelines.
-"""
-
 from typing import Any, Dict, Optional
 import numpy as np
 from core.pipeline import PipelineComponent

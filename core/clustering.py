@@ -14,13 +14,23 @@ class Clustering(ABC):
     """
     
     @abstractmethod
-    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+        """
+        Initialize the clustering algorithm with configuration parameters.
+        
+        Args:
+            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None)
+            **kwargs: Additional algorithm-specific hyperparameters
+        """
+        pass
+    
+    @abstractmethod
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None)
             **kwargs: Additional algorithm-specific hyperparameters
             
         Raises:

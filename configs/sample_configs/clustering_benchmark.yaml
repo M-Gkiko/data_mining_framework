@@ -9,10 +9,11 @@ pipeline_template:
       Hierarchical:
         n_clusters: 3
         linkage: "complete"
-        metric: "precomputed"  # Use precomputed with distance measure
+        distance_measure: "Cosine"
       DBSCAN:
         eps: 0.6
         min_samples: 4
+        distance_measure: "Manhattan"
         # Optimized parameters for Iris dataset (150 samples)
 
   - type: "clustering_quality"

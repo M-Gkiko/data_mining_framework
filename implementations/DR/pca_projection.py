@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 import numpy as np
 from sklearn.decomposition import PCA
 from core.dataset import Dataset
@@ -13,23 +13,22 @@ class PCAProjection(DimensionalityReduction):
     - Hyperparameters (like n_components) are passed dynamically via kwargs.
     """
 
-    def __init__(self, **kwargs: Any):
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any):
+        # Store distance measure (PCA doesn't use it, but keep for interface consistency)
+        self.distance_measure = distance_measure
+        
         # Default hyperparameters
         self.params = {"n_components": 2}
         self.params.update(kwargs)
         self.model = None
         self.projection = None
 
-    def fit_transform(
-        self, dataset: Dataset, distance_measure: "DistanceMeasure | None" = None, **kwargs: Any
-    ) -> np.ndarray:
+    def fit_transform(self, dataset: Dataset, **kwargs: Any) -> np.ndarray:
         """
         Reduce the dimensionality of the given dataset using PCA.
 
         Args:
             dataset (Dataset): The dataset to project.
-            distance_measure (DistanceMeasure, optional): Included for
-                consistency, but not used by PCA.
             **kwargs: Optional hyperparameters (e.g., n_components).
 
         Returns:
