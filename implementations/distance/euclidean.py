@@ -1,1 +1,0 @@
-# Euclidean distance implementation

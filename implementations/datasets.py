@@ -34,6 +34,7 @@ class CSVDataset(Dataset):
             raise FileNotFoundError(f"CSV file not found: {file_path}")
         
         self.file_path = file_path
+        self.name = os.path.basename(file_path).split('.')[0]  # Extract filename without extension
         self.delimiter = delimiter
         self.header = header
         self.encoding = encoding
@@ -80,6 +81,15 @@ class CSVDataset(Dataset):
             int: Number of data rows
         """
         return len(self._data)
+    
+    def get_columns(self) -> int:
+        """
+        Get the number of columns in the CSV file.
+        
+        Returns:
+            int: Number of columns
+        """
+        return len(self._data.columns)
     
     def shape(self) -> Tuple[int, int]:
         """

@@ -1,0 +1,40 @@
+# Benchmark configuration for testing Hierarchical and DBSCAN clustering
+# with Calinski-Harabasz and Davies-Bouldin quality measures
+
+benchmark:
+  name: "Iris_Clustering_Benchmark"
+  dataset: "data/iris.csv"  # Famous Iris dataset with 3 natural clusters
+
+pipeline_template:
+  - type: "clustering"
+    algorithms: ["Hierarchical", "DBSCAN"]
+    params:
+      Hierarchical:
+        n_clusters: 3
+        linkage: "complete"
+        metric: "precomputed"  # Use precomputed with distance measure
+      DBSCAN:
+        eps: 0.6
+        min_samples: 4
+        # Optimized parameters for Iris dataset (150 samples)
+
+  - type: "clustering_quality"
+    algorithms: ["Calinski_Harabasz", "Davies_Bouldin"]
+    params:
+      Calinski_Harabasz: {}  # Default parameters
+      Davies_Bouldin: {}     # Default parameters
+
+# Distance measure configuration (Euclidean works well with Iris)
+distance_measure: "Euclidean"
+
+# Benchmark execution settings
+iterations: 3  # Run each combination 3 times for statistical reliability
+
+# Output configuration
+output:
+  directory: "benchmark_results"
+  format: ["csv", "json"]  # Export to both CSV and JSON
+
+# Additional benchmark settings
+timeout: 300  # 5 minutes timeout per benchmark run
+verbose: true  # Enable detailed logging

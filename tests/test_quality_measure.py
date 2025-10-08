@@ -5,7 +5,7 @@ Tests for the QualityMeasure abstract base class.
 import pytest
 import unittest
 from unittest.mock import Mock
-from core.clustering_quality_measure import CLQualityMeasure
+from core.clustering_quality_measure import ClusteringQualityMeasure
 from core.dataset import Dataset
 
 
@@ -15,17 +15,17 @@ class TestQualityMeasure(unittest.TestCase):
     def test_quality_measure_is_abstract(self):
         """Test that QualityMeasure cannot be instantiated directly."""
         with self.assertRaises(TypeError):
-            CLQualityMeasure()
+            ClusteringQualityMeasure()
     
     def test_quality_measure_interface_methods_exist(self):
         """Test that all required abstract methods are defined."""
         required_methods = ['evaluate']
         for method in required_methods:
-            self.assertTrue(hasattr(CLQualityMeasure, method))
-            self.assertTrue(callable(getattr(CLQualityMeasure, method)))
+            self.assertTrue(hasattr(ClusteringQualityMeasure, method))
+            self.assertTrue(callable(getattr(ClusteringQualityMeasure, method)))
 
 
-class MockQualityMeasure(CLQualityMeasure):
+class MockQualityMeasure(ClusteringQualityMeasure):
     """Mock implementation for testing purposes."""
     
     def evaluate(self, dataset, labels):
@@ -49,7 +49,7 @@ class TestMockQualityMeasure(unittest.TestCase):
     
     def test_mock_quality_measure_instantiation(self):
         """Test that mock quality measure can be instantiated."""
-        self.assertIsInstance(self.quality_measure, CLQualityMeasure)
+        self.assertIsInstance(self.quality_measure, ClusteringQualityMeasure)
     
     def test_evaluate_valid_labels(self):
         """Test evaluation with valid labels."""

@@ -67,11 +67,10 @@ class ClusteringQualityAdapter(PipelineComponent):
         dataset = input_data['dataset']
         
         try:
-            # Evaluate clustering quality
+            # Evaluate clustering quality - quality measures expect dataset and labels
             score = self.quality_measure.evaluate(
                 dataset,
-                clustering_algorithm,
-                self.distance_measure,
+                labels,
                 **self.measure_params
             )
             

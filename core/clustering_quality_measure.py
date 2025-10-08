@@ -4,7 +4,7 @@ import numpy as np
 from .dataset import Dataset
 
 
-class CLQualityMeasure(ABC):
+class ClusteringQualityMeasure(ABC):
     """
     Abstract base class for clustering quality measures in the data mining framework.
     
