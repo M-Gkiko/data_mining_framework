@@ -58,7 +58,7 @@ def _load_algorithms():
     # Import clustering algorithms
     from implementations.clustering.hierarchical import HierarchicalClustering
     from implementations.clustering.dbscan import DBSCANClustering
-    #from implementations.clustering.kmeans import KMeansClustering
+    from implementations.clustering.kmeans import KMeansClustering
     
     # Import DR algorithms
     from implementations.dr.pca_projection import PCAProjection
@@ -68,7 +68,7 @@ def _load_algorithms():
     # Import clustering quality measures
     from implementations.clustering.quality.calinski_harabasz import CalinskiHarabaszIndex
     from implementations.clustering.quality.davies_bouldin import DaviesBouldinIndex
-    #from implementations.clustering.quality.silhouette import SilhouetteScore
+    from implementations.clustering.quality.silhouette import Silhouette
     
     # Import DR quality measures
     from implementations.dr.quality.trustworthiness import Trustworthiness
@@ -77,13 +77,13 @@ def _load_algorithms():
     
     # Import distance measures
     from implementations.distance.manhattan import ManhattanDistance
-    #from implementations.distance.euclidean import EuclideanDistance
+    from implementations.distance.euclidean import EuclideanDistance
     from implementations.distance.cosine import CosineDistance
     
     # Populate clustering algorithms
     ALGORITHMS["clustering"]["Hierarchical"] = HierarchicalClustering
     ALGORITHMS["clustering"]["DBSCAN"] = DBSCANClustering
-    #ALGORITHMS["clustering"]["KMeans"] = KMeansClustering
+    ALGORITHMS["clustering"]["KMeans"] = KMeansClustering
     
     # Populate DR algorithms
     ALGORITHMS["dimensionality_reduction"]["PCA"] = PCAProjection
@@ -93,14 +93,14 @@ def _load_algorithms():
     # Populate quality measures
     QUALITY_MEASURES["Calinski_Harabasz"] = CalinskiHarabaszIndex
     QUALITY_MEASURES["Davies_Bouldin"] = DaviesBouldinIndex
-    #QUALITY_MEASURES["Silhouette"] = SilhouetteScore
+    QUALITY_MEASURES["Silhouette"] = Silhouette
     QUALITY_MEASURES["Trustworthiness"] = Trustworthiness
     QUALITY_MEASURES["Continuity"] = Continuity
     QUALITY_MEASURES["Reconstruction_Error"] = ReconstructionError
     
     # Populate distance measures
     DISTANCE_MEASURES["Manhattan"] = ManhattanDistance
-    #DISTANCE_MEASURES["Euclidean"] = EuclideanDistance
+    DISTANCE_MEASURES["Euclidean"] = EuclideanDistance
     DISTANCE_MEASURES["Cosine"] = CosineDistance
     
     _loaded = True

@@ -11,30 +11,35 @@ pipeline_template:
       MDS:
         n_components: 2
         max_iter: 300
-        distance_measure: "Manhattan"
+        distance_measure: "Euclidean"
       TSNE:
         n_components: 2
         perplexity: 30
         max_iter: 1000
-        distance_measure: "Manhattan"
+        distance_measure: "Euclidean"
 
   - type: "clustering"
-    algorithms: ["Hierarchical", "DBSCAN"]
+    algorithms: ["Hierarchical", "DBSCAN", "KMeans"]
     params:
       Hierarchical:
         n_clusters: 3
         linkage: "complete"
-        distance_measure: "Manhattan"
+        distance_measure: "Euclidean"
       DBSCAN:
         eps: 0.6
         min_samples: 4
-        distance_measure: "Manhattan"
+        distance_measure: "Euclidean"
+      KMeans:
+        n_clusters: 3
+        max_iter: 300
+        random_state: 42
 
   - type: "clustering_quality"
-    algorithms: ["Calinski_Harabasz", "Davies_Bouldin"]
+    algorithms: ["Calinski_Harabasz", "Davies_Bouldin", "Silhouette"]
     params:
       Calinski_Harabasz: {}
       Davies_Bouldin: {}
+      Silhouette: {}
 
 # Benchmark execution settings
 iterations: 3

@@ -8,9 +8,10 @@ from utils.distance_utils import build_distance_matrix
 
 
 class Silhouette(ClusteringQualityMeasure):
-    def __init__(self, distance_measure: DistanceMeasure):
+    def __init__(self, distance_measure: DistanceMeasure = None):
         """
-        Initialize with a given distance measure.
+        Initialize with an optional distance measure.
+        If none provided, defaults to Euclidean distance.
         """
         self.distance_measure = distance_measure
 
@@ -31,9 +32,13 @@ class Silhouette(ClusteringQualityMeasure):
         labels = np.asarray(labels)
 
         # Compute using Euclidean or a custom distance
-        if self.distance_measure.get_name().lower() != "euclidean":
-            distance_matrix = build_distance_matrix(data, self.distance_measure)
-            score = silhouette_score(distance_matrix, labels, metric="precomputed")
+        if self.distance_measure is not None:
+            distance_name = getattr(self.distance_measure, "get_name", lambda: "euclidean")().lower()
+            if distance_name != "euclidean":
+                distance_matrix = build_distance_matrix(data, self.distance_measure)
+                score = silhouette_score(distance_matrix, labels, metric="precomputed")
+            else:
+                score = silhouette_score(data, labels, metric="euclidean")
         else:
             score = silhouette_score(data, labels, metric="euclidean")
 
