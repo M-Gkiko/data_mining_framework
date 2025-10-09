@@ -42,7 +42,7 @@ class DRQualityAdapter(PipelineComponent):
         Execute DR quality evaluation.
         
         Args:
-            input_data: Reduced data (np.ndarray) from DR algorithm
+            input_data: Reduced data (Dataset) from DR adapter
             
         Returns:
             Dict with quality measure name as key and score as value
@@ -51,14 +51,19 @@ class DRQualityAdapter(PipelineComponent):
             ValueError: If input data is invalid
             RuntimeError: If quality evaluation fails
         """
-        if not isinstance(input_data, np.ndarray):
-            raise ValueError(f"DRQualityAdapter expects np.ndarray (reduced data), got {type(input_data)}")
+        if not isinstance(input_data, Dataset):
+            raise ValueError(f"DRQualityAdapter expects Dataset (reduced data), got {type(input_data)}")
         
         try:
+            # Extract numpy array from Dataset for quality evaluation
+            reduced_data = input_data.get_data()
+            if not isinstance(reduced_data, np.ndarray):
+                raise ValueError(f"Dataset must contain numpy array data, got {type(reduced_data)}")
+            
             # Evaluate DR quality
             score = self.quality_measure.evaluate(
                 self.original_dataset,
-                input_data,
+                reduced_data,
                 **self.measure_params
             )
             

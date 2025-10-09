@@ -110,7 +110,7 @@ Examples:
     
     parser.add_argument(
         "--config", "-c",
-        default="configs/sample_configs/clustering_benchmark.yaml",
+        default="configs/sample_configs/dr_cl_quality.yaml",
         help="Path to YAML configuration file"
     )
     

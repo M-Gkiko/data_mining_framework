@@ -24,8 +24,9 @@ class TSNEProjection(DimensionalityReduction):
             "n_components": 2,
             "perplexity": 30,
             "learning_rate": "auto",
-            "n_iter": 1000,
+            "max_iter": 1000,
             "metric": "precomputed",
+            "init": "random",  # Required when using precomputed distance matrix
             "random_state": 42,
         }
 

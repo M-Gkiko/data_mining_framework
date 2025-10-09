@@ -22,9 +22,6 @@ pipeline_template:
       Calinski_Harabasz: {}  # Default parameters
       Davies_Bouldin: {}     # Default parameters
 
-# Distance measure configuration (Manhattan distance for comparison)
-distance_measure: "Manhattan"
-
 # Benchmark execution settings
 iterations: 3  # Run each combination 3 times for statistical reliability
 

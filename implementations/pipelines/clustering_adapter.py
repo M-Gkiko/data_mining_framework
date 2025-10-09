@@ -1,4 +1,4 @@
-from typing import Any, Optional, Dict, Union
+from typing import Any, Optional, Dict, Union, Callable, Type
 import numpy as np
 from core.pipeline import PipelineComponent
 from core.clustering import Clustering
@@ -16,7 +16,8 @@ class ClusteringAdapter(PipelineComponent):
     
     def __init__(self, clustering_algorithm: Clustering,
                  distance_measure: Optional[DistanceMeasure] = None,
-                 name: Optional[str] = None, **kwargs):
+                 name: Optional[str] = None,
+                 **kwargs):
         """
         Initialize clustering adapter.
         
@@ -34,12 +35,12 @@ class ClusteringAdapter(PipelineComponent):
         adapter_name = name or f"Clustering_{clustering_algorithm.__class__.__name__}"
         super().__init__(adapter_name)
     
-    def execute(self, input_data: Union[Dataset, np.ndarray]) -> Dict[str, Any]:
+    def execute(self, input_data: Dataset) -> Dict[str, Any]:
         """
         Execute clustering algorithm.
         
         Args:
-            input_data: Dataset (original) or np.ndarray (from DR step)
+            input_data: Dataset object (conversion from np.ndarray should happen before this)
             
         Returns:
             Dict containing:
@@ -50,19 +51,13 @@ class ClusteringAdapter(PipelineComponent):
                 - 'n_clusters': Number of clusters (if available)
                 
         Raises:
-            ValueError: If input data is invalid
+            ValueError: If input data is not a Dataset
             RuntimeError: If clustering algorithm execution fails
         """
-        # Handle different input types
-        if isinstance(input_data, Dataset):
-            dataset = input_data
-            original_data = input_data
-        elif isinstance(input_data, np.ndarray):
-            # Create temporary Dataset from numpy array (from DR step)
-            dataset = Dataset("clustered_data", input_data)
-            original_data = input_data
-        else:
-            raise ValueError(f"ClusteringAdapter expects Dataset or np.ndarray, got {type(input_data)}")
+        if not isinstance(input_data, Dataset):
+            raise ValueError(f"ClusteringAdapter expects Dataset, got {type(input_data)}")
+        
+        dataset = input_data
         
         try:
             # Execute clustering (distance_measure is now set in constructor)
@@ -81,7 +76,7 @@ class ClusteringAdapter(PipelineComponent):
                 'labels': labels,
                 'algorithm': self.clustering_algorithm,
                 'dataset': dataset,
-                'original_data': original_data
+                'original_data': input_data
             }
             
             # Add number of clusters if available

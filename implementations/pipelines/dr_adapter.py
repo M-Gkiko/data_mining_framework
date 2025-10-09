@@ -4,6 +4,7 @@ from core.pipeline import PipelineComponent
 from core.dimensionality_reduction import DimensionalityReduction
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
+from implementations.datasets import NumpyDataset
 
 
 class DRAdapter(PipelineComponent):
@@ -33,40 +34,35 @@ class DRAdapter(PipelineComponent):
         adapter_name = name or f"DR_{dr_algorithm.__class__.__name__}"
         super().__init__(adapter_name)
     
-    def execute(self, input_data: Any) -> np.ndarray:
+    def execute(self, input_data: Dataset) -> Dataset:
         """
         Execute dimensionality reduction algorithm.
         
         Args:
-            input_data: Dataset or numpy array to reduce
+            input_data: Dataset to reduce
             
         Returns:
-            np.ndarray: Reduced dimensionality data
+            Dataset: Reduced dimensionality data wrapped in NumpyDataset
             
         Raises:
-            ValueError: If input data is invalid
+            ValueError: If input data is not a Dataset
             RuntimeError: If DR algorithm execution fails
         """
-        # Handle different input types
-        if isinstance(input_data, Dataset):
-            dataset = input_data
-        elif isinstance(input_data, np.ndarray):
-            # Create temporary Dataset from numpy array (for chained operations)
-            dataset = Dataset("temp_dataset", input_data)
-        else:
-            raise ValueError(f"DRAdapter expects Dataset or np.ndarray, got {type(input_data)}")
+        if not isinstance(input_data, Dataset):
+            raise ValueError(f"DRAdapter expects Dataset, got {type(input_data)}")
         
         try:
             # Execute dimensionality reduction
             reduced_data = self.dr_algorithm.fit_transform(
-                dataset, 
+                input_data, 
                 **self.algorithm_params
             )
             
             if not isinstance(reduced_data, np.ndarray):
                 raise RuntimeError(f"DR algorithm {self.dr_algorithm.__class__.__name__} must return np.ndarray")
             
-            return reduced_data
+            # Wrap the reduced numpy array in a NumpyDataset for next pipeline step
+            return NumpyDataset(reduced_data)
             
         except Exception as e:
             raise RuntimeError(f"DR algorithm {self.dr_algorithm.__class__.__name__} failed: {str(e)}") from e
