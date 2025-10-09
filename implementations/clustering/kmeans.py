@@ -1,12 +1,12 @@
 import numpy as np
 from typing import List, Optional, Any
 from sklearn.cluster import KMeans
-from core.clustering import ClusteringAlgorithm
+from core.clustering import Clustering
 from core.dataset import Dataset
 from core.distance_measure import DistanceMeasure
 
 
-class KMeansClustering(ClusteringAlgorithm):
+class KMeansClustering(Clustering):
     """
     K-Means clustering using scikit-learn, with optional custom distance measure.
     Note: sklearn's KMeans only supports Euclidean distance.
@@ -17,24 +17,36 @@ class KMeansClustering(ClusteringAlgorithm):
         n_clusters: int = 3,
         max_iter: int = 300,
         tol: float = 1e-4,
-        random_state: Optional[int] = None
+        random_state: Optional[int] = None,
+        distance_measure: Optional[DistanceMeasure] = None,
     ):
+        """
+        Initialize the KMeans clustering object.
+
+        Args:
+            n_clusters (int): Number of clusters.
+            max_iter (int): Maximum number of iterations.
+            tol (float): Tolerance to declare convergence.
+            random_state (Optional[int]): Random seed.
+            distance_measure (Optional[DistanceMeasure]): Distance measure (only 'euclidean' is supported).
+        """
         self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.tol = tol
         self.random_state = random_state
+        self.distance_measure = distance_measure
+
         self._kmeans = None
         self._labels = None
         self._fitted = False
 
-    def fit(self, dataset: Dataset, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit K-Means clustering to the dataset.
 
         Args:
             dataset (Dataset): Dataset object containing data
-            distance_measure (Optional[DistanceMeasure]): Custom distance measure (default: Euclidean)
-            **kwargs: Extra parameters (can override n_clusters, max_iter, etc.)
+            **kwargs: Optional overrides for n_clusters, max_iter, tol, random_state
 
         Raises:
             ValueError: If dataset is invalid or custom distance is unsupported
@@ -44,8 +56,9 @@ class KMeansClustering(ClusteringAlgorithm):
         if data.ndim != 2:
             raise ValueError("Dataset must be 2D!")
 
-        if distance_measure is not None:
-            name = getattr(distance_measure, "get_name", lambda: "euclidean")().lower()
+        # Validate distance measure
+        if self.distance_measure is not None:
+            name = getattr(self.distance_measure, "get_name", lambda: "euclidean")().lower()
             if name != "euclidean":
                 raise NotImplementedError(
                     f"KMeans only supports Euclidean distance, but got '{name}'."
@@ -61,7 +74,7 @@ class KMeansClustering(ClusteringAlgorithm):
             max_iter=max_iter,
             tol=tol,
             random_state=random_state,
-            n_init="auto",  
+            n_init="auto",
         )
 
         self._labels = self._kmeans.fit_predict(data).tolist()
