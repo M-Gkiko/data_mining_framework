@@ -1,0 +1,49 @@
+benchmark:
+  name: "DR_Clustering_Quality_Benchmark"
+  dataset: "data/iris.csv"
+
+pipeline_template:
+  - type: "dimensionality_reduction"
+    algorithms: ["PCA", "MDS", "TSNE"]
+    params:
+      PCA:
+        n_components: 2
+      MDS:
+        n_components: 2
+        max_iter: 300
+        distance_measure: "Manhattan"
+      TSNE:
+        n_components: 2
+        perplexity: 30
+        max_iter: 1000
+        distance_measure: "Manhattan"
+
+  - type: "clustering"
+    algorithms: ["Hierarchical", "DBSCAN"]
+    params:
+      Hierarchical:
+        n_clusters: 3
+        linkage: "complete"
+        distance_measure: "Manhattan"
+      DBSCAN:
+        eps: 0.6
+        min_samples: 4
+        distance_measure: "Manhattan"
+
+  - type: "clustering_quality"
+    algorithms: ["Calinski_Harabasz", "Davies_Bouldin"]
+    params:
+      Calinski_Harabasz: {}
+      Davies_Bouldin: {}
+
+# Benchmark execution settings
+iterations: 3
+
+# Output configuration
+output:
+  directory: "benchmark_results"
+  format: ["csv"]
+
+# Additional benchmark settings
+timeout: 300
+verbose: true
