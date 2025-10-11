@@ -14,8 +14,6 @@ class PCAProjection(DimensionalityReduction):
     """
 
     def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any):
-        # Store distance measure (PCA doesn't use it, but keep for interface consistency)
-        self.distance_measure = distance_measure
         
         # Default hyperparameters
         self.params = {"n_components": 2}

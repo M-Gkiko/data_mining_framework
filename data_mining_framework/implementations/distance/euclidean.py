@@ -9,10 +9,6 @@ class EuclideanDistance(DistanceMeasure):
     Calculates the Euclidean distance between two points using SciPy.
     """
 
-    def get_name(self) -> str:
-        """Return the name of this distance measure."""
-        return "Euclidean"
-
     def calculate(self, point1: Union[np.ndarray, list], point2: Union[np.ndarray, list]) -> float:
         """
         Calculate the Euclidean distance between two points.

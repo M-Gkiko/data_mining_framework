@@ -26,7 +26,7 @@ Example usage:
 """
 
 __version__ = "0.1.0"
-__author__ = "David"
+__author__ = "Mario"
 __email__ = "your.email@example.com"
 
 # Core interfaces
@@ -43,18 +43,18 @@ from .implementations.datasets import CSVDataset, NumpyDataset
 
 # Distance measure implementations
 from .implementations.distance.manhattan import ManhattanDistance
-# from .implementations.distance.euclidean import EuclideanDistance  # Uncomment when available
-# from .implementations.distance.cosine import CosineDistance  # Uncomment when available
+from .implementations.distance.euclidean import EuclideanDistance  
 
 # Clustering implementations
 from .implementations.clustering.hierarchical import HierarchicalClustering
 from .implementations.clustering.dbscan import DBSCANClustering
-# from .implementations.clustering.kmeans import KMeansClustering  # Uncomment when available
+from .implementations.clustering.kmeans import KMeansClustering  
 
 # DR implementations
 from .implementations.dr.pca_projection import PCAProjection
 from .implementations.dr.mds_projection import MDSProjection
 from .implementations.dr.tsne_projection import TSNEProjection
+from .implementations.dr.sammon_projection import SammonProjection
 
 # Quality measure implementations
 from .implementations.clustering.quality.calinski_harabasz import CalinskiHarabaszIndex
@@ -100,13 +100,13 @@ __all__ = [
     'CSVDataset', 'NumpyDataset',
     
     # Distance measures
-    'ManhattanDistance',
+'ManhattanDistance', 'EuclideanDistance', 'CosineDistance',
     
     # Clustering algorithms
-    'HierarchicalClustering', 'DBSCANClustering',
+    'HierarchicalClustering', 'DBSCANClustering', 'KMeansClustering',
     
     # DR algorithms
-    'PCAProjection', 'MDSProjection', 'TSNEProjection',
+    'PCAProjection', 'MDSProjection', 'TSNEProjection', 'SammonProjection',
     
     # Quality measures
     'CalinskiHarabaszIndex', 'DaviesBouldinIndex',
