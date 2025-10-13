@@ -54,7 +54,7 @@ from .implementations.clustering.kmeans import KMeansClustering
 from .implementations.dr.pca_projection import PCAProjection
 from .implementations.dr.mds_projection import MDSProjection
 from .implementations.dr.tsne_projection import TSNEProjection
-from .implementations.dr.sammon_projection import SammonProjection
+from .implementations.dr.sammon_mapping import SammonMapping
 
 # Quality measure implementations
 from .implementations.clustering.quality.calinski_harabasz import CalinskiHarabaszIndex
@@ -106,7 +106,7 @@ __all__ = [
     'HierarchicalClustering', 'DBSCANClustering', 'KMeansClustering',
     
     # DR algorithms
-    'PCAProjection', 'MDSProjection', 'TSNEProjection', 'SammonProjection',
+    'PCAProjection', 'MDSProjection', 'TSNEProjection', 'SammonMapping',
     
     # Quality measures
     'CalinskiHarabaszIndex', 'DaviesBouldinIndex',
