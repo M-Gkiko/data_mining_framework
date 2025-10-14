@@ -12,8 +12,7 @@ class DBSCANClustering(Clustering):
     DBSCAN (Density-Based Spatial Clustering of Applications with Noise) groups
     together points that are closely packed while marking outliers as noise.
     
-    Defaults to metric='euclidean' but can use custom distance measures via 
-    metric='precomputed' when distance_measure is provided.
+    Supports both custom distance measures and sklearn's built-in metrics.
     """
     
     def __init__(self, distance_measure: Optional[DistanceMeasure] = None, eps: float = 0.5, min_samples: int = 5, **kwargs: Any):
@@ -27,13 +26,24 @@ class DBSCANClustering(Clustering):
                         (epsilon radius). Default: 0.5
             min_samples (int): Minimum number of samples in neighborhood to
                              form a core point. Default: 5
-            **kwargs: Additional parameters
+            **kwargs: Additional parameters including:
+                - metric (str): Built-in sklearn metric to use when no distance_measure provided
+                              (e.g., 'euclidean', 'manhattan', 'cosine'). Default: 'euclidean'
         """
         self.distance_measure = distance_measure
+        
+        # Set defaults based on whether custom distance measure is provided
+        if distance_measure is not None:
+            # Use precomputed with custom distance
+            default_metric = "precomputed"
+        else:
+            # Use built-in sklearn metric
+            default_metric = kwargs.pop("metric", "euclidean")
+        
         self.params = {
             "eps": eps,
             "min_samples": min_samples,
-            "metric": "precomputed" if distance_measure is not None else "euclidean"
+            "metric": default_metric
         }
         self.params.update(kwargs)
         
@@ -50,13 +60,22 @@ class DBSCANClustering(Clustering):
             **kwargs: Optional hyperparameters including:
                 - eps (float): Maximum distance between samples for neighborhood
                 - min_samples (int): Minimum samples in neighborhood for core point
-                - metric (str): Distance metric ('euclidean', 'manhattan', 'precomputed')
-            
+                - metric (str): Distance metric for built-in sklearn metrics
+                
         Raises:
-            ValueError: If dataset is empty or invalid
+            ValueError: If dataset is empty or invalid parameters are provided
         """
         # Allow runtime parameter overrides
-        self.params.update(kwargs)
+        runtime_params = kwargs.copy()
+        
+        # Handle metric parameter in runtime overrides
+        if "metric" in runtime_params and self.distance_measure is not None:
+            raise ValueError(
+                "Cannot override metric when using custom distance_measure. "
+                "Custom distance measures always use metric='precomputed'"
+            )
+        
+        self.params.update(runtime_params)
         
         X = dataset.get_data()
         if X is None:
@@ -69,20 +88,14 @@ class DBSCANClustering(Clustering):
         min_samples = self.params["min_samples"]
         metric = self.params["metric"]
         
-        # Handle distance measure parameter validation
-        if metric != "precomputed" and self.distance_measure is not None:
-            raise ValueError(
-                f"distance_measure provided but metric='{metric}'. "
-                "To use custom distance measures, set metric='precomputed'"
-            )
-        
-        # Prepare data or distance matrix
+        # Prepare data based on whether using custom distance or built-in metric
         if metric == "precomputed":
             if self.distance_measure is None:
                 raise ValueError(
                     "metric='precomputed' requires a distance_measure parameter. "
-                    "Either provide distance_measure in constructor or use a built-in metric like 'euclidean'"
+                    "Either provide distance_measure in constructor or use a built-in metric"
                 )
+            # Build distance matrix using custom distance measure
             D = build_distance_matrix(X, self.distance_measure)
             self._dbscan = DBSCAN(
                 eps=eps,
@@ -91,7 +104,12 @@ class DBSCANClustering(Clustering):
             )
             self._dbscan.fit(D)
         else:
-            # Direct metrics handled by sklearn internally
+            # Use built-in sklearn metric directly
+            if self.distance_measure is not None:
+                raise ValueError(
+                    "distance_measure provided but using built-in metric. "
+                    "To use custom distance measures, set metric='precomputed' or don't provide metric parameter"
+                )
             self._dbscan = DBSCAN(
                 eps=eps,
                 min_samples=min_samples,
