@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "data-mining-framework"
-version = "0.1.0"
+version = "0.1.6"
 description = "A comprehensive framework for data mining algorithm benchmarking and evaluation"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -31,13 +31,13 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "numpy==2.0.1",
-    "pandas==2.3.2",
-    "scikit-learn==1.7.2",
-    "pydantic==2.11.9",
-    "pyyaml==6.0.2",
-    "matplotlib==3.10.6",
-    "seaborn==0.13.2",
+    "numpy>=1.21",
+    "pandas>=1.5",
+    "scikit-learn>=1.0",
+    "pydantic>=1.10",
+    "pyyaml>=5.4",
+    "matplotlib>=3.5",
+    "seaborn>=0.11",
 ]
 
 [project.optional-dependencies]

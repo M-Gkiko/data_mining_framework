@@ -1,0 +1,26 @@
+# Include documentation and metadata
+include README.md
+include LICENSE
+include requirements.txt
+include pyproject.toml
+
+# Include examples and documentation (including YAML configs)
+recursive-include examples *.py *.yaml *.yml *.md
+recursive-include docs *.md *.rst
+
+# Exclude build artifacts and cache
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .pytest_cache
+global-exclude *.egg-info
+
+# Exclude development/testing files and directories
+exclude .gitignore
+exclude .pre-commit-config.yaml
+exclude run_benchmark.py
+exclude install_and_test.py
+recursive-exclude tests *
+recursive-exclude data *
+recursive-exclude benchmark_results *
+recursive-exclude configs *
