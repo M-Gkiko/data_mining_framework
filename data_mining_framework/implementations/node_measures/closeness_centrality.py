@@ -82,25 +82,3 @@ class ClosenessCentralityMeasure(NodeMeasure):
                 closeness[node] = base
 
         return closeness
-
-
-if __name__ == "__main__":
-    from ...implementations.networks.edgelist import EdgeListNetwork
-    import os, pprint
-
-    # Path to your example network file
-    current_dir = os.path.dirname(__file__)
-    filepath = os.path.join(current_dir, "../networks/example_edgelist.txt")
-
-    # Load network
-    net = EdgeListNetwork(filepath, delimiter=None, directed=False)
-
-    # Initialize the measure
-    measure = ClosenessCentralityMeasure(normalized=True)
-
-    # Compute centrality scores
-    results = measure.calculate(net)
-
-    print("Closeness Centrality Results:")
-    pprint.pprint(results)
-
