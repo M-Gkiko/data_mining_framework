@@ -62,23 +62,3 @@ class JaccardCoefficientMeasure(EdgeMeasure):
             scores[(u, v)] = score
 
         return scores
-
-if __name__ == "__main__":
-    import os, pprint
-    from ...implementations.networks.edgelist import EdgeListNetwork
-
-    # Path to your example edgelist
-    current_dir = os.path.dirname(__file__)
-    filepath = os.path.join(current_dir, "../networks/example_edgelist.txt")
-
-    # Load the network
-    net = EdgeListNetwork(filepath, directed=False)
-
-    # Initialize and calculate the measure
-    measure = JaccardCoefficientMeasure()
-    results = measure.calculate(net)
-
-    print("Jaccard Coefficient Results:")
-    pprint.pprint(results)
-
-
