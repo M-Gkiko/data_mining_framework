@@ -21,8 +21,8 @@ class DegreeCentralityMeasure(NodeMeasure):
             normalized (bool): Whether to normalize by max possible degree (default: True)
             **kwargs: Additional parameters
         """
-        # TODO: Implement initialization
-        pass
+        self.normalized = normalized
+        self._scores: Dict[Any, float] = {}
 
     def calculate(self, network: Network, **kwargs: Any) -> Dict[Any, float]:
         """
@@ -34,6 +34,19 @@ class DegreeCentralityMeasure(NodeMeasure):
 
         Returns:
             Dict[Any, float]: Dictionary mapping nodes to degree centrality scores
+
+        Raises:
+            ValueError: If network is empty
         """
-        # TODO: Implement calculation
-        pass
+        if network.node_count() == 0:
+            raise ValueError("Network must have at least one node")
+
+        self._scores = {}
+        n = network.node_count()
+        divisor = (n - 1) if self.normalized and n > 1 else 1
+
+        for node in network.get_nodes():
+            degree = len(network.get_neighbors(node))
+            self._scores[node] = degree / divisor if divisor > 0 else 0.0
+
+        return self._scores.copy()
