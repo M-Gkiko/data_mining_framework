@@ -28,22 +28,45 @@ class NodeMeasureAdapter(PipelineComponent):
         component_name = name or f"NodeMeasure_{node_measure.__class__.__name__}"
         super().__init__(component_name)
 
-    def execute(self, input_data: Network) -> Dict[str, Any]:
+    def execute(self, input_data) -> Dict[str, Any]:
         """
         Execute node measure calculation.
 
         Args:
-            input_data: Network object
+            input_data: Network object or dict containing 'network' key
 
         Returns:
             Dict containing:
                 - 'node_scores': Dictionary mapping nodes to scores
                 - 'measure_name': Name of the measure
                 - 'network': Network object used
+                - Previous pipeline results (if input was dict)
 
         Raises:
-            ValueError: If input data is not a Network
+            ValueError: If input data doesn't contain a Network
             RuntimeError: If calculation fails
         """
-        # TODO: Implement execute method
-        pass
+        # Extract network from input (handles both Network objects and dicts from previous pipeline steps)
+        if isinstance(input_data, Network):
+            network = input_data
+            previous_results = {}
+        elif isinstance(input_data, dict) and 'network' in input_data:
+            network = input_data['network']
+            previous_results = {k: v for k, v in input_data.items() if k != 'network'}
+        else:
+            raise ValueError(f"Expected Network or dict with 'network' key, got {type(input_data)}")
+
+        # Calculate node measure
+        try:
+            node_scores = self.node_measure.calculate(network, **self.algorithm_params)
+        except Exception as e:
+            raise RuntimeError(f"Node measure calculation failed: {str(e)}") from e
+
+        # Return structured results, including previous pipeline results
+        result = {
+            **previous_results,  # Include results from previous pipeline steps
+            'node_scores': node_scores,
+            'measure_name': self.node_measure.__class__.__name__,
+            'network': network
+        }
+        return result

@@ -46,5 +46,24 @@ class CommunityDetectionAdapter(PipelineComponent):
             ValueError: If input data is not a Network
             RuntimeError: If algorithm execution fails
         """
-        # TODO: Implement execute method
-        pass
+        # Validate input
+        if not isinstance(input_data, Network):
+            raise ValueError(f"Expected Network input, got {type(input_data)}")
+
+        # Run community detection
+        try:
+            self.community_algorithm.fit(input_data, **self.algorithm_params)
+        except Exception as e:
+            raise RuntimeError(f"Community detection failed: {str(e)}") from e
+
+        # Get results
+        communities = self.community_algorithm.get_communities()
+        modularity = self.community_algorithm.get_modularity()
+
+        # Return structured results
+        return {
+            'communities': communities,
+            'modularity': modularity,
+            'algorithm': self.community_algorithm,
+            'network': input_data
+        }

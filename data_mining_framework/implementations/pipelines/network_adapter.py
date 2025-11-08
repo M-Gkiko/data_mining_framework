@@ -37,5 +37,8 @@ class NetworkAdapter(PipelineComponent):
         Raises:
             RuntimeError: If network is invalid
         """
-        # TODO: Implement execute method
-        pass
+        # Validate network has nodes
+        if self.network.node_count() == 0:
+            raise RuntimeError("Network has no nodes")
+
+        return self.network
