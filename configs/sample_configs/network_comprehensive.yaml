@@ -1,0 +1,63 @@
+benchmark:
+  name: "Comprehensive_Network_Benchmark"
+  dataset: "data/karate.edgelist"  # Zachary's Karate Club network
+
+pipeline_template:
+  # Test all community detection algorithms
+  - type: "community_detection"
+    algorithms: ["Louvain", "GirvanNewman", "LabelPropagation"]
+    params:
+      Louvain:
+        resolution: 1.0
+        random_state: 42
+      GirvanNewman:
+        k: 3  # Try detecting 3 communities
+      LabelPropagation:
+        max_iterations: 100
+        random_seed: 42
+
+  # Test all node centrality measures
+  - type: "node_measures"
+    algorithms: ["PageRank", "DegreeCentrality", "ClosenessCentrality"]
+    params:
+      PageRank:
+        alpha: 0.85
+        max_iter: 100
+        tol: 0.000001
+      DegreeCentrality:
+        normalized: true
+      ClosenessCentrality:
+        normalized: true
+
+  # Test all edge measures
+  - type: "edge_measures"
+    algorithms: ["EdgeBetweenness", "EdgeWeight", "JaccardCoefficient"]
+    params:
+      EdgeBetweenness:
+        normalized: true
+      EdgeWeight:
+        weight_attribute: "weight"
+        default_weight: 1.0
+      JaccardCoefficient: {}
+
+# Benchmark execution settings
+iterations: 10  # Higher iteration count for more robust statistics
+
+# Output configuration
+output:
+  directory: "benchmark_results/network_comprehensive"
+  format: ["csv", "json"]
+  save_communities: true       # Save community assignments
+  save_node_measures: true     # Save node centrality scores
+  save_edge_measures: true     # Save edge measure scores
+  create_visualizations: false # Set to true if visualization libraries available
+
+# Additional benchmark settings
+timeout: 900      # 15 minutes timeout
+verbose: true     # Detailed logging
+random_seed: 42   # Reproducibility
+
+# Notes:
+# This configuration tests all 3×3×3 = 27 algorithm combinations
+# Total benchmark runs: 27 combinations × 10 iterations = 270 runs
+# Estimated time: 5-10 minutes depending on network size

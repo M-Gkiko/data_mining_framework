@@ -153,7 +153,13 @@ class SimpleBenchmark:
             List of benchmark results
         """
         print(f"Starting benchmark: {self.config.name}")
-        print(f"Dataset: {dataset.name}")
+        # Handle both Dataset and Network objects
+        if hasattr(dataset, 'name'):
+            print(f"Dataset: {dataset.name}")
+        else:
+            # Network objects don't have name attribute
+            dataset_type = type(dataset).__name__
+            print(f"Dataset: {dataset_type} ({dataset.node_count()} nodes, {dataset.edge_count()} edges)")
         
         combinations = self.config.generate_combinations()
         total_runs = len(combinations) * self.config.iterations
@@ -172,12 +178,12 @@ class SimpleBenchmark:
                 self.results.append(result)
                 
                 if result.is_successful:
-                    print(f"    ✓ Success - Total time: {result.execution_time:.3f}s")
+                    print(f"    [OK] Success - Total time: {result.execution_time:.3f}s")
                     if result.quality_scores:
                         for metric, score in result.quality_scores.items():
-                            print(f"    ✓ Quality scores: {metric}: {score:.3f}")
+                            print(f"    [OK] Quality scores: {metric}: {score:.3f}")
                 else:
-                    print(f"    ✗ Failed: {result.error_message}")
+                    print(f"    [FAIL] Failed: {result.error_message}")
         
         successful_runs = len([r for r in self.results if r.is_successful])
         print(f"\nBenchmark completed: {successful_runs}/{len(self.results)} successful")
