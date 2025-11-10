@@ -1,10 +1,3 @@
-"""
-Clustering algorithm abstract base class for the data mining framework.
-
-This module defines the ClusteringAlgorithm interface following the Strategy Pattern,
-allowing different clustering algorithms to be used interchangeably.
-"""
-
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
 import numpy as np
@@ -12,7 +5,7 @@ from .dataset import Dataset
 from .distance_measure import DistanceMeasure
 
 
-class ClusteringAlgorithm(ABC):
+class Clustering(ABC):
     """
     Abstract base class for clustering algorithms in the data mining framework.
     
@@ -21,14 +14,24 @@ class ClusteringAlgorithm(ABC):
     """
     
     @abstractmethod
-    def fit(self, dataset: Dataset, distance_measure: DistanceMeasure, **kwargs: Any) -> None:
+    def __init__(self, distance_measure: Optional[DistanceMeasure] = None, **kwargs: Any) -> None:
+        """
+        Initialize the clustering algorithm with configuration parameters.
+        
+        Args:
+            distance_measure (Optional[DistanceMeasure]): The distance measure to use (default: None)
+            **kwargs: Additional algorithm-specific hyperparameters
+        """
+        pass
+    
+    @abstractmethod
+    def fit(self, dataset: Dataset, **kwargs: Any) -> None:
         """
         Fit the clustering algorithm to the given dataset.
         
         Args:
             dataset (Dataset): The dataset to cluster
-            distance_measure (DistanceMeasure): The distance measure to use
-            **kwargs: Additional algorithm-specific parameters
+            **kwargs: Additional algorithm-specific hyperparameters
             
         Raises:
             ValueError: If dataset is empty or invalid

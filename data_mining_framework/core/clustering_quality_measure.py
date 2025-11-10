@@ -1,17 +1,10 @@
-"""
-Quality measure abstract base class for the data mining framework.
-
-This module defines the QualityMeasure interface following the Strategy Pattern,
-allowing different clustering quality metrics to be used interchangeably.
-"""
-
 from abc import ABC, abstractmethod
 from typing import List, Union
 import numpy as np
 from .dataset import Dataset
 
 
-class QualityMeasure(ABC):
+class ClusteringQualityMeasure(ABC):
     """
     Abstract base class for clustering quality measures in the data mining framework.
     

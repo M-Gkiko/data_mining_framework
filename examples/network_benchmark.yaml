@@ -1,0 +1,48 @@
+benchmark:
+  name: "Network_Analysis_Benchmark"
+  dataset: "../data/karate.edgelist"
+
+pipeline_template:
+  - type: "community_detection"
+    algorithms: ["Louvain", "GirvanNewman", "LabelPropagation"]
+    params:
+      Louvain:
+        resolution: 1.0
+        random_state: 42
+      GirvanNewman:
+        k: 2
+      LabelPropagation:
+        max_iterations: 100
+        random_seed: 42
+
+  - type: "node_measures"
+    algorithms: ["PageRank", "DegreeCentrality", "ClosenessCentrality"]
+    params:
+      PageRank:
+        alpha: 0.85
+        max_iter: 100
+        tol: 0.000001
+      DegreeCentrality:
+        normalized: true
+      ClosenessCentrality:
+        normalized: true
+
+  - type: "edge_measures"
+    algorithms: ["EdgeBetweenness", "EdgeWeight", "JaccardCoefficient"]
+    params:
+      EdgeBetweenness:
+        normalized: true
+      EdgeWeight:
+        weight_attribute: "weight"
+        default_weight: 1.0
+      JaccardCoefficient: {}
+
+iterations: 5
+output:
+  directory: "network_benchmark_results"
+  format: ["csv", "json"]
+  save_communities: true
+  save_centralities: true
+timeout: 600
+verbose: true
+random_seed: 42

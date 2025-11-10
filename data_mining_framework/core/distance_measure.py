@@ -1,10 +1,3 @@
-"""
-Distance measure abstract base class for the data mining framework.
-
-This module defines the DistanceMeasure interface following the Strategy Pattern,
-allowing different distance/similarity metrics to be used interchangeably.
-"""
-
 from abc import ABC, abstractmethod
 from typing import Union
 import numpy as np
