@@ -6,29 +6,39 @@ A flexible framework for benchmarking data mining algorithms including clusterin
 
 ## Installation
 
+### From TestPyPI (https://test.pypi.org/project/data-mining-framework/)_
+
 ```bash
-# From source
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ data-mining-framework
+```
+
+Note: The `--extra-index-url` ensures dependencies are installed from the main PyPI repository.
+
+### From Source (Development)
+
+```bash
 git clone https://github.com/M-Gkiko/data_mining_framework.git
 cd data_mining_framework
 pip install -e .
 
-# Development mode
-pip install -e ".[dev]"
+# With development dependencies
+pip install -e ".[dev]" 
+pip install -r requirements.txt # Alternative 
 ```
 
 ## Quick Start
 
-### CLI Usage
+### Running Benchmarks
 
 ```bash
-# Run a benchmark
-dm-benchmark examples/clustering_benchmark.yaml
+# Run a benchmark from YAML configuration
+python examples/run_benchmark_example.py --config examples/clustering_benchmark.yaml
 
 # Run with verbose output
-dm-benchmark examples/dr_cl_quality.yaml --verbose
+python examples/run_benchmark_example.py --config examples/dr_cl_quality.yaml --verbose
 
 # Network analysis benchmark
-dm-benchmark examples/network_benchmark.yaml
+python examples/run_benchmark_example.py --config examples/network_benchmark.yaml
 ```
 
 ### Python API Examples
@@ -98,6 +108,124 @@ from data_mining_framework.benchmarks import run_benchmark
 results = run_benchmark('examples/dr_cl_quality.yaml')
 print(f"Completed {results.total_runs} runs")
 print(f"Average time: {results.average_time:.3f}s")
+```
+
+## Running Example Scripts
+
+The `examples/` directory contains ready-to-run Python scripts demonstrating various framework capabilities. All examples assume you're running from the project root directory.
+
+### Basic Examples
+
+#### 1. Simple Clustering Example
+
+Demonstrates basic clustering with quality evaluation.
+
+```bash
+cd data_mining_framework
+python examples/basic_clustering.py
+```
+
+**What it does:**
+- Loads the Iris dataset
+- Performs Hierarchical clustering (complete linkage, 3 clusters)
+- Evaluates quality using Calinski-Harabasz Index
+
+#### 2. Pipeline Example
+
+Shows how to chain algorithms in a pipeline: DR → Clustering → Quality.
+
+```bash
+python examples/pipeline_example.py
+```
+
+**What it does:**
+- PCA dimensionality reduction (2 components)
+- Hierarchical clustering (3 clusters)
+- Quality evaluation with Calinski-Harabasz Index
+- Reports execution times for each component
+
+### Comprehensive Examples
+
+#### 3. Multiple Pipeline Examples
+
+Runs 4 different example pipelines demonstrating various algorithm combinations.
+
+```bash
+python examples/run_pipeline_example.py
+```
+
+**What it includes:**
+- **Example 1:** PCA → Hierarchical → Quality
+- **Example 2:** t-SNE → DBSCAN → Quality
+- **Example 3:** Network community detection with node centrality measures
+- **Example 4:** Comparison of community detection algorithms
+
+#### 4. Network Analysis Examples
+
+Focused examples for network analysis tasks.
+
+```bash
+python examples/network_pipeline_example.py
+```
+
+**What it includes:**
+- Simple community detection with Louvain algorithm
+- Node centrality measures (PageRank)
+- Comparison of community detection algorithms (Louvain, Girvan-Newman, Label Propagation)
+
+### Benchmark Runner
+
+#### 5. Full Benchmark Runner
+
+Comprehensive benchmark system with YAML configuration support.
+
+```bash
+# Run with default config
+python examples/run_benchmark_example.py
+
+# Run with specific config
+python examples/run_benchmark_example.py --config examples/clustering_benchmark.yaml
+
+# Run network analysis benchmark
+python examples/run_benchmark_example.py --config examples/network_benchmark.yaml
+
+# Enable verbose output
+python examples/run_benchmark_example.py --config examples/dr_cl_quality.yaml --verbose
+```
+
+**Features:**
+- Loads YAML configuration files
+- Auto-detects benchmark type (clustering, DR, network, mixed)
+- Runs multiple algorithm combinations
+- Multiple iterations per combination
+- Exports results to CSV/JSON
+- Detailed progress reporting
+
+### Expected Output
+
+When running examples, you should see:
+- Dataset/network loading information
+- Algorithm execution progress
+- Results (cluster labels, quality scores, centrality measures)
+- Execution times
+- File paths for exported results (for benchmark runner)
+
+### Troubleshooting
+
+**Import errors:** Make sure you've installed the package first:
+```bash
+pip install -e .
+```
+
+**Data file not found:** The examples expect to run from the project root. Use:
+```bash
+cd data_mining_framework
+python examples/script_name.py
+```
+
+**Missing dependencies:** Install all required packages:
+```bash
+pip install -e ".[dev]"
 ```
 
 ## YAML Configuration Reference

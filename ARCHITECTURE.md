@@ -268,12 +268,10 @@ data_mining_framework/
 │   ├── distance_utils.py         # Distance matrix computation
 │   └── timer.py                  # Performance timing
 │
-├── examples/                     # Example scripts and configs
-│   ├── *.yaml                   # Benchmark configurations
-│   └── *.py                     # Python usage examples
-│
-├── cli.py                       # Command-line interface
-└── run_benchmark.py             # Standalone benchmark runner
+└── examples/                     # Example scripts and configs
+    ├── *.yaml                   # Benchmark configurations
+    ├── run_benchmark_example.py # Comprehensive benchmark runner
+    └── *.py                     # Python usage examples
 ```
 
 ## Implementation Guidelines
