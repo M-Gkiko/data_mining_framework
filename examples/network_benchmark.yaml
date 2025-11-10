@@ -1,9 +1,8 @@
 benchmark:
   name: "Network_Analysis_Benchmark"
-  dataset: "data/karate.edgelist"  # Zachary's Karate Club network (34 nodes, 78 edges)
+  dataset: "../data/karate.edgelist"
 
 pipeline_template:
-  # Step 1: Community Detection
   - type: "community_detection"
     algorithms: ["Louvain", "GirvanNewman", "LabelPropagation"]
     params:
@@ -11,12 +10,11 @@ pipeline_template:
         resolution: 1.0
         random_state: 42
       GirvanNewman:
-        k: 2  # Number of communities to find
+        k: 2
       LabelPropagation:
         max_iterations: 100
         random_seed: 42
 
-  # Step 2: Node Centrality Measures
   - type: "node_measures"
     algorithms: ["PageRank", "DegreeCentrality", "ClosenessCentrality"]
     params:
@@ -29,7 +27,6 @@ pipeline_template:
       ClosenessCentrality:
         normalized: true
 
-  # Step 3: Edge Measures
   - type: "edge_measures"
     algorithms: ["EdgeBetweenness", "EdgeWeight", "JaccardCoefficient"]
     params:
@@ -38,19 +35,14 @@ pipeline_template:
       EdgeWeight:
         weight_attribute: "weight"
         default_weight: 1.0
-      JaccardCoefficient: {}  # No parameters needed
+      JaccardCoefficient: {}
 
-# Benchmark execution settings
-iterations: 5  # Run each combination 5 times for statistical reliability
-
-# Output configuration
+iterations: 5
 output:
   directory: "network_benchmark_results"
   format: ["csv", "json"]
-  save_communities: true  # Save detected communities
-  save_centralities: true  # Save node centrality scores
-
-# Additional benchmark settings
-timeout: 600  # 10 minutes timeout per benchmark run
-verbose: true  # Enable detailed logging
-random_seed: 42  # For reproducibility
+  save_communities: true
+  save_centralities: true
+timeout: 600
+verbose: true
+random_seed: 42

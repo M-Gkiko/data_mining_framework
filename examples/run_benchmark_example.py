@@ -232,10 +232,10 @@ Supports benchmarking of:
         epilog="""
 Examples:
   # Run clustering benchmark
-  python run_benchmark.py --config configs/sample_configs/clustering_benchmark.yaml
+  python run_benchmark.py --config examples/clustering_benchmark.yaml
 
   # Run dimensionality reduction benchmark
-  python run_benchmark.py --config configs/sample_configs/dr_cl_quality.yaml
+  python run_benchmark.py --config examples/dr_cl_quality.yaml
 
   # Run network analysis benchmark
   python run_benchmark.py --config examples/network_benchmark.yaml
@@ -250,13 +250,13 @@ Configuration File Format:
     - benchmark.iterations: Number of iterations to run
     - pipeline_template: List of algorithm configurations to test
 
-  See examples/ and configs/sample_configs/ for templates.
+  See examples/ directory for configuration templates.
         """
     )
 
     parser.add_argument(
         "--config", "-c",
-        default="configs/sample_configs/dr_cl_quality.yaml",
+        default="examples/dr_cl_quality.yaml",
         help="Path to YAML benchmark configuration file (default: %(default)s)"
     )
 

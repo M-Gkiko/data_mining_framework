@@ -1,6 +1,6 @@
 benchmark:
   name: "DR_Clustering_Quality_Benchmark"
-  dataset: "data/iris.csv"
+  dataset: "../data/iris.csv"
 
 pipeline_template:
   - type: "dimensionality_reduction"
@@ -36,14 +36,9 @@ pipeline_template:
       Calinski_Harabasz: {}
       Davies_Bouldin: {}
 
-# Benchmark execution settings
 iterations: 3
-
-# Output configuration
 output:
   directory: "benchmark_results"
   format: ["csv"]
-
-# Additional benchmark settings
 timeout: 300
 verbose: true

@@ -1,217 +1,335 @@
 # Data Mining Framework
 
-A comprehensive framework for benchmarking data mining algorithms, focusing on clustering and dimensionality reduction techniques.
+A flexible framework for benchmarking data mining algorithms including clustering, dimensionality reduction, and network analysis.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-## Features
-
-- 🔬 **Comprehensive Algorithm Support**: Clustering (Hierarchical, DBSCAN), Dimensionality Reduction (PCA, MDS, t-SNE)
-- 📊 **Quality Measures**: Built-in evaluation metrics for both clustering and DR results
-- 🎯 **Flexible Distance Metrics**: Support for Manhattan, Euclidean, and Cosine distances
-- 🚀 **Pipeline Architecture**: Chain algorithms together (DR → Clustering → Quality evaluation)
-- 📈 **Benchmarking System**: Automated performance and quality benchmarking with CSV export
-- 🔧 **Extensible Design**: Easy to add new algorithms, distance measures, and quality metrics
 
 ## Installation
 
-### From PyPI (when published)
 ```bash
-pip install data-mining-framework
-```
-
-### From Source
-```bash
+# From source
 git clone https://github.com/M-Gkiko/data_mining_framework.git
 cd data_mining_framework
 pip install -e .
-```
 
-### Development Installation
-```bash
-git clone https://github.com/M-Gkiko/data_mining_framework.git
-cd data_mining_framework
+# Development mode
 pip install -e ".[dev]"
 ```
 
 ## Quick Start
 
-### Command Line Interface
+### CLI Usage
+
 ```bash
-# Run a benchmark from configuration file
+# Run a benchmark
 dm-benchmark examples/clustering_benchmark.yaml
 
 # Run with verbose output
 dm-benchmark examples/dr_cl_quality.yaml --verbose
 
-# List available example configurations
-dm-benchmark --list-configs
+# Network analysis benchmark
+dm-benchmark examples/network_benchmark.yaml
 ```
 
-### Python API
+### Python API Examples
 
-#### Simple Clustering Example
+#### Simple Clustering
+
 ```python
 from data_mining_framework import CSVDataset, HierarchicalClustering, ManhattanDistance
 
-# Load data
 dataset = CSVDataset('data/iris.csv')
+distance = ManhattanDistance()
+clustering = HierarchicalClustering(distance_measure=distance, n_clusters=3, linkage='complete')
 
-# Create distance measure and clustering algorithm
-distance_measure = ManhattanDistance()
-clustering = HierarchicalClustering(
-    distance_measure=distance_measure,
-    n_clusters=3,
-    linkage='complete'
-)
-
-# Fit and get results
 clustering.fit(dataset)
 labels = clustering.get_labels()
-print(f"Cluster labels: {labels}")
 ```
 
-#### Complete Pipeline Example
+#### Pipeline: DR → Clustering → Quality
+
 ```python
 from data_mining_framework import (
-    CSVDataset, PCAProjection, HierarchicalClustering, 
+    CSVDataset, PCAProjection, HierarchicalClustering,
     CalinskiHarabaszIndex, ManhattanDistance, Pipeline
 )
+from data_mining_framework.implementations.pipelines import (
+    DRAdapter, ClusteringAdapter, ClusteringQualityAdapter
+)
 
-# Load dataset
 dataset = CSVDataset('data/iris.csv')
-distance_measure = ManhattanDistance()
+distance = ManhattanDistance()
 
-# Create pipeline: DR → Clustering → Quality
 pipeline = Pipeline("PCA_Hierarchical_Quality")
 
 # Add dimensionality reduction
 pca = PCAProjection(n_components=2)
-dr_adapter = DRAdapter(pca)
-pipeline.add_component(dr_adapter)
+pipeline.add_component(DRAdapter(pca))
 
 # Add clustering
-clustering = HierarchicalClustering(
-    distance_measure=distance_measure,
-    n_clusters=3
-)
-clustering_adapter = ClusteringAdapter(clustering, distance_measure)
-pipeline.add_component(clustering_adapter)
+clustering = HierarchicalClustering(distance_measure=distance, n_clusters=3)
+pipeline.add_component(ClusteringAdapter(clustering, distance))
 
-# Add quality evaluation
-quality_measure = CalinskiHarabaszIndex()
-quality_adapter = ClusteringQualityAdapter(quality_measure)
-pipeline.add_component(quality_adapter)
+# Add quality measure
+quality = CalinskiHarabaszIndex()
+pipeline.add_component(ClusteringQualityAdapter(quality))
 
-# Execute pipeline
 results = pipeline.execute(dataset)
-print(f"Quality score: {results}")
 ```
 
-#### Benchmark from Python
+#### Network Analysis
+
 ```python
-from data_mining_framework import run_benchmark
+from data_mining_framework import NetworkXWrapper, LouvainCommunityDetection
 
-# Run benchmark and get results
-results = run_benchmark('examples/dr_cl_quality.yaml')
-print(f"Benchmark completed: {results.total_runs} runs")
-print(f"Average execution time: {results.average_time:.3f}s")
+network = NetworkXWrapper(filepath='data/karate.edgelist', format='edgelist')
+louvain = LouvainCommunityDetection(resolution=1.0)
+
+louvain.fit(network)
+communities = louvain.get_communities()
+modularity = louvain.get_modularity()
 ```
 
-## Configuration Files
+#### Run Benchmarks from Python
 
-The framework uses YAML configuration files to define benchmarks:
+```python
+from data_mining_framework.benchmarks import run_benchmark
+
+results = run_benchmark('examples/dr_cl_quality.yaml')
+print(f"Completed {results.total_runs} runs")
+print(f"Average time: {results.average_time:.3f}s")
+```
+
+## YAML Configuration Reference
+
+### Basic Structure
 
 ```yaml
 benchmark:
   name: "My_Benchmark"
-  dataset: "data/iris.csv"
+  dataset: "path/to/data.csv"
 
 pipeline_template:
-  - type: "dimensionality_reduction"
-    algorithms: ["PCA", "MDS", "TSNE"]
+  - type: "step_type"
+    algorithms: ["Algorithm1", "Algorithm2"]
     params:
-      PCA:
-        n_components: 2
-      MDS:
-        n_components: 2
-        distance_measure: "Manhattan"
-      TSNE:
-        n_components: 2
-        perplexity: 30
-        distance_measure: "Manhattan"
-
-  - type: "clustering"
-    algorithms: ["Hierarchical", "DBSCAN"]
-    params:
-      Hierarchical:
-        n_clusters: 3
-        linkage: "complete"
-        distance_measure: "Manhattan"
-      DBSCAN:
-        eps: 0.6
-        min_samples: 4
-        distance_measure: "Manhattan"
-
-  - type: "clustering_quality"
-    algorithms: ["Calinski_Harabasz", "Davies_Bouldin"]
+      Algorithm1:
+        param1: value1
+      Algorithm2:
+        param2: value2
 
 iterations: 3
 output:
-  directory: "benchmark_results"
+  directory: "results"
   format: ["csv"]
 ```
 
-## Available Algorithms
+### Pipeline Step Types
 
-### Clustering Algorithms
-- **Hierarchical Clustering**: Agglomerative clustering with various linkage criteria
-- **DBSCAN**: Density-based clustering for discovering clusters of arbitrary shape
+#### Dimensionality Reduction (`dimensionality_reduction`)
 
-### Dimensionality Reduction
-- **PCA**: Principal Component Analysis for linear dimensionality reduction
-- **MDS**: Multidimensional Scaling for preserving distances
-- **t-SNE**: t-Distributed Stochastic Neighbor Embedding for non-linear reduction
+**Algorithms:** `PCA`, `MDS`, `TSNE`, `Sammon`
+
+```yaml
+- type: "dimensionality_reduction"
+  algorithms: ["PCA", "MDS", "TSNE", "Sammon"]
+  params:
+    PCA:
+      n_components: 2
+    MDS:
+      n_components: 2
+      max_iter: 300
+      distance_measure: "Manhattan"  # Optional: Manhattan, Euclidean, Cosine
+    TSNE:
+      n_components: 2
+      perplexity: 30
+      max_iter: 1000
+      distance_measure: "Manhattan"
+    Sammon:
+      n_components: 2
+      max_iter: 500
+      distance_measure: "Manhattan"
+      init: "pca"  # or "random"
+```
+
+#### Clustering (`clustering`)
+
+**Algorithms:** `Hierarchical`, `DBSCAN`, `KMeans`
+
+```yaml
+- type: "clustering"
+  algorithms: ["Hierarchical", "DBSCAN", "KMeans"]
+  params:
+    Hierarchical:
+      n_clusters: 3
+      linkage: "complete"  # complete, average, single, ward
+      distance_measure: "Manhattan"
+    DBSCAN:
+      eps: 0.5
+      min_samples: 5
+      distance_measure: "Euclidean"
+    KMeans:
+      n_clusters: 3
+      max_iter: 300
+      n_init: 10
+```
+
+#### Clustering Quality (`clustering_quality`)
+
+**Algorithms:** `Calinski_Harabasz`, `Davies_Bouldin`, `Silhouette`
+
+```yaml
+- type: "clustering_quality"
+  algorithms: ["Calinski_Harabasz", "Davies_Bouldin", "Silhouette"]
+  params:
+    Calinski_Harabasz: {}
+    Davies_Bouldin: {}
+    Silhouette: {}
+```
+
+#### DR Quality (`dr_quality`)
+
+**Algorithms:** `Trustworthiness`, `Continuity`, `Reconstruction_Error`
+
+```yaml
+- type: "dr_quality"
+  algorithms: ["Trustworthiness", "Continuity", "Reconstruction_Error"]
+  params:
+    Trustworthiness:
+      n_neighbors: 12
+    Continuity:
+      n_neighbors: 12
+    Reconstruction_Error: {}
+```
+
+#### Community Detection (`community_detection`)
+
+**Algorithms:** `Louvain`, `GirvanNewman`, `LabelPropagation`
+
+```yaml
+- type: "community_detection"
+  algorithms: ["Louvain", "GirvanNewman", "LabelPropagation"]
+  params:
+    Louvain:
+      resolution: 1.0
+      random_state: 42
+    GirvanNewman:
+      k: 2  # Number of communities
+    LabelPropagation:
+      max_iterations: 100
+      random_seed: 42
+```
+
+#### Node Measures (`node_measures`)
+
+**Algorithms:** `PageRank`, `DegreeCentrality`, `ClosenessCentrality`
+
+```yaml
+- type: "node_measures"
+  algorithms: ["PageRank", "DegreeCentrality", "ClosenessCentrality"]
+  params:
+    PageRank:
+      alpha: 0.85
+      max_iter: 100
+      tol: 0.000001
+    DegreeCentrality:
+      normalized: true
+    ClosenessCentrality:
+      normalized: true
+```
+
+#### Edge Measures (`edge_measures`)
+
+**Algorithms:** `EdgeBetweenness`, `EdgeWeight`, `JaccardCoefficient`
+
+```yaml
+- type: "edge_measures"
+  algorithms: ["EdgeBetweenness", "EdgeWeight", "JaccardCoefficient"]
+  params:
+    EdgeBetweenness:
+      normalized: true
+    EdgeWeight:
+      weight_attribute: "weight"
+      default_weight: 1.0
+    JaccardCoefficient: {}
+```
+
+### Global Configuration Options
+
+```yaml
+benchmark:
+  name: "Benchmark_Name"      # Benchmark identifier
+  dataset: "data/file.csv"    # Path to dataset
+
+iterations: 3                 # Number of runs per configuration
+
+output:
+  directory: "results"        # Output directory
+  format: ["csv", "json"]     # Output formats
+  save_communities: true      # Save community results (network only)
+  save_centralities: true     # Save centrality scores (network only)
+
+timeout: 300                  # Timeout per run in seconds
+verbose: true                 # Enable detailed logging
+random_seed: 42               # Random seed for reproducibility
+```
 
 ### Distance Measures
-- **Manhattan Distance**: L1 norm distance
-- **Euclidean Distance**: L2 norm distance (when available)
-- **Cosine Distance**: Angular distance measure (when available)
+
+Available distance measures: `Manhattan`, `Euclidean`, `Cosine`
+
+Use in algorithm params:
+```yaml
+params:
+  AlgorithmName:
+    distance_measure: "Manhattan"
+```
+
+## Available Implementations
+
+### Clustering
+- `Hierarchical` - Agglomerative clustering (linkage: complete, average, single, ward)
+- `DBSCAN` - Density-based clustering
+- `KMeans` - K-means clustering
+
+### Dimensionality Reduction
+- `PCA` - Principal Component Analysis
+- `MDS` - Multidimensional Scaling
+- `TSNE` - t-Distributed Stochastic Neighbor Embedding
+- `Sammon` - Sammon Mapping
+
+### Network Analysis
+- **Community Detection:** Louvain, Girvan-Newman, Label Propagation
+- **Node Measures:** PageRank, Degree Centrality, Closeness Centrality
+- **Edge Measures:** Edge Betweenness, Edge Weight, Jaccard Coefficient
 
 ### Quality Measures
-- **Clustering Quality**: Calinski-Harabasz Index, Davies-Bouldin Index
-- **DR Quality**: Trustworthiness, Continuity, Reconstruction Error
+- **Clustering:** Calinski-Harabasz Index, Davies-Bouldin Index, Silhouette Score
+- **DR:** Trustworthiness, Continuity, Reconstruction Error
 
-## Development
+## Example Configurations
 
-### Running Tests
-```bash
-pytest tests/
+See the `examples/` directory:
+- `clustering_benchmark.yaml` - Basic clustering benchmark
+- `dr_cl_quality.yaml` - Full pipeline (DR + Clustering + Quality)
+- `network_benchmark.yaml` - Network analysis benchmark
+- `*.py` - Python examples for direct API usage
+
+## Project Structure
+
 ```
-
-### Code Formatting
-```bash
-black .
-flake8 .
-```
-
-### Building Package
-```bash
-python -m build
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-
+data_mining_framework/
+├── core/                    # Abstract base classes
+├── implementations/         # Algorithm implementations
+│   ├── clustering/
+│   ├── dr/
+│   ├── networks/
+│   ├── community_detection/
+│   ├── node_measures/
+│   ├── edge_measures/
+│   └── pipelines/          # Pipeline adapters
+├── benchmarks/             # Benchmarking system
+├── utils/                  # Utilities
+├── examples/               # Usage examples and configs
+└── data/                   # Sample datasets
 ```

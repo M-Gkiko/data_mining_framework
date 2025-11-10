@@ -42,7 +42,6 @@ class PCAProjection(DimensionalityReduction):
         # Ensure numpy array format
         X = np.asarray(X, dtype=float)
 
-        # Create and fit PCA model
         self.model = PCA(n_components=self.params["n_components"])
         self.projection = self.model.fit_transform(X)
 

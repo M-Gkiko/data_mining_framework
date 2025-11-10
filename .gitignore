@@ -57,6 +57,8 @@ results/
 output/
 *.log
 experiments/
+pipeline_results.txt
+reflection_report.md
 
 # Models 
 *.pkl
@@ -71,3 +73,6 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Documentation files
+*.pdf

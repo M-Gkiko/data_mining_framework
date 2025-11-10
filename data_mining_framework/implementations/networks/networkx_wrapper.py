@@ -39,7 +39,6 @@ class NetworkXWrapper(Network):
             else:
                 raise ValueError(f"Unsupported format: {format}")
         else:
-            # Create empty graph
             self._graph = nx.Graph()
 
     def get_nodes(self) -> List[Any]:

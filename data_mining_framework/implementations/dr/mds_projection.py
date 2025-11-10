@@ -34,16 +34,21 @@ class MDSProjection(DimensionalityReduction):
         self.distance_measure = distance_measure
 
         # Minimal explicit parameters
-        # Choose default metric depending on whether a DistanceMeasure was provided
+        # Note: sklearn MDS 'metric' parameter is boolean (True for metric MDS, False for non-metric)
+        # When using custom distance measures, we use metric=True with dissimilarity='precomputed'
         if distance_measure is not None:
-            default_metric = "precomputed"
+            # Use metric MDS with precomputed distances
+            default_metric = True
+            default_dissimilarity = "precomputed"
         else:
-            default_metric = kwargs.pop("metric", "euclidean")
+            # Use sklearn's built-in distance computation
+            default_metric = kwargs.pop("metric", True)
+            default_dissimilarity = kwargs.pop("dissimilarity", "euclidean")
 
         if "metric" in kwargs and distance_measure is not None:
             raise ValueError(
                 "Cannot override metric when using custom distance_measure. "
-                "Custom distance measures always use metric='precomputed'"
+                "Custom distance measures always use metric=True with dissimilarity='precomputed'"
             )
 
         self.params = {
@@ -52,6 +57,7 @@ class MDSProjection(DimensionalityReduction):
             "max_iter": int(max_iter),
             "n_init": int(n_init),
             "metric": default_metric,
+            "dissimilarity": default_dissimilarity,
         }
 
         # Allow kwargs to override the minimal params if desired
@@ -74,26 +80,25 @@ class MDSProjection(DimensionalityReduction):
 
         # Build kwargs for sklearn.MDS from the adapter params
         mds_kwargs = dict(self.params)
-        metric = mds_kwargs.get("metric", "euclidean")
+        dissimilarity = mds_kwargs.get("dissimilarity", "euclidean")
 
-        # Validate metric vs provided DistanceMeasure
-        if metric == "precomputed":
+        # Check if using precomputed distances (custom distance measure)
+        if dissimilarity == "precomputed":
             if self.distance_measure is None:
                 raise ValueError(
-                    "metric='precomputed' requires a distance_measure parameter. "
-                    "Either provide distance_measure in constructor or use a built-in metric"
+                    "dissimilarity='precomputed' requires a distance_measure parameter. "
+                    "Either provide distance_measure in constructor or use a built-in dissimilarity"
                 )
-            # use precomputed distances
+            # Use precomputed distances
             dist_matrix = build_distance_matrix(X, self.distance_measure)
-            mds_kwargs["dissimilarity"] = "precomputed"
             self.model = MDS(**mds_kwargs)
             self.projection = self.model.fit_transform(dist_matrix)
         else:
-            # If a custom DistanceMeasure was given but metric is not precomputed, that's invalid
+            # Using sklearn's built-in distance computation
             if self.distance_measure is not None:
                 raise ValueError(
-                    "distance_measure provided but using built-in metric. "
-                    "To use custom distance measures, set metric='precomputed' or don't provide metric parameter"
+                    "distance_measure provided but dissimilarity is not 'precomputed'. "
+                    "To use custom distance measures, don't override dissimilarity parameter"
                 )
             # No DistanceMeasure: pass raw X to sklearn's MDS
             self.model = MDS(**mds_kwargs)

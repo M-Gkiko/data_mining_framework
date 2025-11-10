@@ -70,8 +70,7 @@ class ClusteringQualityAdapter(PipelineComponent):
             
             if not isinstance(score, (int, float)):
                 raise RuntimeError(f"Clustering quality measure {self.quality_measure.__class__.__name__} must return numeric score")
-            
-            # Return score with measure name as key
+
             return {self.name: float(score)}
             
         except Exception as e:

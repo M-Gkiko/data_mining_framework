@@ -118,8 +118,7 @@ def build_benchmark_pipeline(config: BenchmarkConfig, combination: Dict[str, str
             # Remove the string from params and pass the object to algorithm constructor
             del params['distance_measure']
             params['distance_measure'] = algorithm_distance_measure
-        
-        # Create algorithm and adapter
+
         algorithm = create_algorithm(step_type, algorithm_name, **params)
         adapter = create_adapter(step_type, algorithm, algorithm_distance_measure, dataset)
         pipeline.add_component(adapter)

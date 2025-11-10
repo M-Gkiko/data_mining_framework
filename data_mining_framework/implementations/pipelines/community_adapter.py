@@ -60,7 +60,6 @@ class CommunityDetectionAdapter(PipelineComponent):
         communities = self.community_algorithm.get_communities()
         modularity = self.community_algorithm.get_modularity()
 
-        # Return structured results
         return {
             'communities': communities,
             'modularity': modularity,

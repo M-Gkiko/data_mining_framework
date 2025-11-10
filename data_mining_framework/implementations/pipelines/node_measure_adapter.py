@@ -56,13 +56,11 @@ class NodeMeasureAdapter(PipelineComponent):
         else:
             raise ValueError(f"Expected Network or dict with 'network' key, got {type(input_data)}")
 
-        # Calculate node measure
         try:
             node_scores = self.node_measure.calculate(network, **self.algorithm_params)
         except Exception as e:
             raise RuntimeError(f"Node measure calculation failed: {str(e)}") from e
 
-        # Return structured results, including previous pipeline results
         result = {
             **previous_results,  # Include results from previous pipeline steps
             'node_scores': node_scores,

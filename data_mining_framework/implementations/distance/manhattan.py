@@ -27,7 +27,6 @@ class ManhattanDistance(DistanceMeasure):
         Raises:
             ValueError: If points have incompatible dimensions
         """
-        # Convert to numpy arrays for consistent processing
         p1 = np.asarray(point1)
         p2 = np.asarray(point2)
         

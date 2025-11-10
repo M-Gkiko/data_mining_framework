@@ -73,8 +73,7 @@ def export_results_csv(results: List[BenchmarkResult], output_path: str) -> None
             if result.quality_scores:
                 all_quality_keys.update(result.quality_scores.keys())
             all_combination_keys.update(result.combination.keys())
-        
-        # Create headers
+
         headers = ['iteration', 'success', 'execution_time_seconds', 'error_message']
         headers.extend(sorted(all_combination_keys))
         headers.extend(sorted(all_quality_keys))

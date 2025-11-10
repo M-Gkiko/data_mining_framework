@@ -1,6 +1,6 @@
 benchmark:
   name: "Iris_Clustering_Benchmark"
-  dataset: "data/iris.csv"  # Famous Iris dataset with 3 natural clusters
+  dataset: "../data/iris.csv"
 
 pipeline_template:
   - type: "clustering"
@@ -14,22 +14,16 @@ pipeline_template:
         eps: 0.6
         min_samples: 4
         distance_measure: "Manhattan"
-        # Optimized parameters for Iris dataset (150 samples)
 
   - type: "clustering_quality"
     algorithms: ["Calinski_Harabasz", "Davies_Bouldin"]
     params:
-      Calinski_Harabasz: {}  # Default parameters
-      Davies_Bouldin: {}     # Default parameters
+      Calinski_Harabasz: {}
+      Davies_Bouldin: {}
 
-# Benchmark execution settings
-iterations: 3  # Run each combination 3 times for statistical reliability
-
-# Output configuration
+iterations: 3
 output:
   directory: "benchmark_results"
-  format: ["csv"]  
-
-# Additional benchmark settings
-timeout: 300  # 5 minutes timeout per benchmark run
-verbose: true  # Enable detailed logging
+  format: ["csv"]
+timeout: 300
+verbose: true

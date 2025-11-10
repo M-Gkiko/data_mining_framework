@@ -56,13 +56,11 @@ class EdgeMeasureAdapter(PipelineComponent):
         else:
             raise ValueError(f"Expected Network or dict with 'network' key, got {type(input_data)}")
 
-        # Calculate edge measure
         try:
             edge_scores = self.edge_measure.calculate(network, **self.algorithm_params)
         except Exception as e:
             raise RuntimeError(f"Edge measure calculation failed: {str(e)}") from e
 
-        # Return structured results, including previous pipeline results
         result = {
             **previous_results,  # Include results from previous pipeline steps
             'edge_scores': edge_scores,

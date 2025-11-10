@@ -1,150 +1,318 @@
 # Data Mining Framework Architecture
 
-## Overview
+## Design Philosophy
 
-This data mining framework is designed using the **Strategy Pattern** to provide a flexible, extensible, and maintainable structure for implementing various clustering algorithms, distance measures, and quality evaluation metrics.
+The framework uses the **Strategy Pattern** to provide flexible, interchangeable algorithm implementations. Each component type (clustering, distance measures, quality metrics, etc.) shares a common interface, allowing algorithms to be swapped without changing client code.
 
-## Design Patterns
+## Core Abstractions
 
-### Strategy Pattern
+### Base Interfaces
 
-The framework is built around four core abstract base classes (interfaces) that implement the Strategy Pattern:
+All algorithms inherit from abstract base classes that define standard contracts:
 
-1. **Dataset** - Abstraction for data sources
-2. **DistanceMeasure** - Abstraction for distance/similarity calculations  
-3. **ClusteringAlgorithm** - Abstraction for clustering implementations
-4. **QualityMeasure** - Abstraction for clustering quality evaluation
-
-This pattern allows different implementations to be used interchangeably without changing the client code.
-
-## Core Interfaces
-
-### Dataset Interface
 ```python
+# Data Sources
 class Dataset(ABC):
-    def get_data(self) -> Union[np.ndarray, pd.DataFrame]
-    def get_features(self) -> List[str]
-    def get_rows(self) -> int
-    def shape(self) -> Tuple[int, int]
-```
+    def get_data() -> np.ndarray
+    def get_features() -> List[str]
+    def shape() -> Tuple[int, int]
 
-**Purpose**: Provides a unified interface for different data sources (CSV files, databases, in-memory data, etc.)
-
-**Benefits**: 
-- Decouples data access from algorithms
-- Enables easy switching between data sources
-- Standardizes data access patterns
-
-### DistanceMeasure Interface
-```python
+# Distance Calculations
 class DistanceMeasure(ABC):
-    def calculate(self, point1: Union[np.ndarray, list], point2: Union[np.ndarray, list]) -> float
-```
+    def calculate(point1, point2) -> float
 
-**Purpose**: Defines contract for distance/similarity calculations
-
-**Benefits**:
-- Allows easy experimentation with different distance metrics
-- Separates distance logic from clustering algorithms
-- Enables algorithm-independent distance implementations
-
-### ClusteringAlgorithm Interface
-```python
+# Clustering
 class ClusteringAlgorithm(ABC):
-    def fit(self, dataset: Dataset, distance_measure: DistanceMeasure, **kwargs: Any) -> None
-    def get_labels(self) -> Optional[List[int]]
+    def fit(dataset, **kwargs) -> None
+    def get_labels() -> List[int]
+
+# Dimensionality Reduction
+class DimensionalityReduction(ABC):
+    def fit_transform(dataset, **kwargs) -> np.ndarray
+
+# Network Structures
+class Network(ABC):
+    def get_nodes() -> List[Any]
+    def get_edges() -> List[Tuple[Any, Any]]
+    def node_count() -> int
+    def edge_count() -> int
+
+# Community Detection
+class CommunityDetection(ABC):
+    def fit(network, **kwargs) -> None
+    def get_communities() -> List[Set]
+    def get_modularity() -> float
+
+# Quality Metrics
+class ClusteringQualityMeasure(ABC):
+    def evaluate(dataset, labels) -> float
+
+class DRQualityMeasure(ABC):
+    def evaluate(original_data, projected_data, **kwargs) -> float
+
+class NodeMeasure(ABC):
+    def calculate(network, **kwargs) -> Dict[Any, float]
+
+class EdgeMeasure(ABC):
+    def calculate(network, **kwargs) -> Dict[Tuple, float]
 ```
 
-**Purpose**: Standardizes clustering algorithm implementations
+## Component Types
 
-**Benefits**:
-- Consistent interface across different clustering methods
-- Dependency injection of dataset and distance measure
-- Flexible parameter passing through kwargs
+### 1. Data Handling
 
-### QualityMeasure Interface
+**Implementations:**
+- `CSVDataset` - Load data from CSV files
+- `NumpyDataset` - Wrap numpy arrays
+
+**Network Representations:**
+- `NetworkXWrapper` - NetworkX graph adapter
+- `EdgeListNetwork` - Edge list format
+- `AdjacencyMatrixNetwork` - Matrix format
+
+### 2. Distance Measures
+
+- `ManhattanDistance` - L1 norm (city block)
+- `EuclideanDistance` - L2 norm
+- `CosineDistance` - Angular distance
+
+### 3. Clustering Algorithms
+
+- `HierarchicalClustering` - Agglomerative clustering with linkage methods
+- `DBSCAN` - Density-based spatial clustering
+- `KMeans` - K-means partitioning
+
+### 4. Dimensionality Reduction
+
+- `PCAProjection` - Principal Component Analysis
+- `MDSProjection` - Multidimensional Scaling
+- `TSNEProjection` - t-SNE embedding
+- `SammonMapping` - Sammon projection (MATLAB port)
+
+### 5. Network Analysis
+
+**Community Detection:**
+- `LouvainCommunityDetection` - Modularity optimization
+- `GirvanNewmanCommunityDetection` - Edge betweenness-based
+- `LabelPropagationCommunityDetection` - Label propagation method
+
+**Node Centrality:**
+- `PageRank` - PageRank centrality
+- `DegreeCentrality` - Degree-based importance
+- `ClosenessCentrality` - Distance-based centrality
+
+**Edge Metrics:**
+- `EdgeBetweenness` - Edge betweenness centrality
+- `EdgeWeight` - Edge weight extraction
+- `JaccardCoefficient` - Neighborhood similarity
+
+### 6. Quality Measures
+
+**Clustering Quality:**
+- `CalinskiHarabaszIndex` - Variance ratio criterion
+- `DaviesBouldinIndex` - Cluster separation measure
+- `SilhouetteScore` - Silhouette coefficient
+
+**DR Quality:**
+- `Trustworthiness` - Local structure preservation
+- `Continuity` - Neighborhood preservation
+- `ReconstructionError` - Reconstruction accuracy
+
+## Pipeline Architecture
+
+### Pipeline Components
+
+Pipelines chain algorithms using **adapter classes** that standardize inputs/outputs:
+
 ```python
-class QualityMeasure(ABC):
-    def evaluate(self, dataset: Dataset, labels: List[int]) -> float
+class Pipeline:
+    def __init__(name: str)
+    def add_component(component: PipelineComponent)
+    def execute(input_data) -> Any
 ```
 
-**Purpose**: Provides standardized clustering quality evaluation
+### Adapters
 
-**Benefits**:
-- Enables comparison between different clustering results
-- Separates evaluation logic from clustering algorithms
-- Allows multiple quality metrics to be applied
+Each algorithm type has a corresponding adapter:
 
-## Architecture Benefits
+- `DRAdapter` - Wraps DR algorithms
+- `ClusteringAdapter` - Wraps clustering algorithms
+- `ClusteringQualityAdapter` - Wraps clustering quality measures
+- `DRQualityAdapter` - Wraps DR quality measures
+- `NetworkAdapter` - Wraps network data
+- `CommunityAdapter` - Wraps community detection
+- `NodeMeasureAdapter` - Wraps node centrality measures
+- `EdgeMeasureAdapter` - Wraps edge measures
 
-### 1. **Flexibility**
-- Easy to add new implementations without modifying existing code
-- Algorithms can be combined in different ways
-- Runtime selection of strategies
+### Pipeline Flow
 
-### 2. **Testability**
-- Each interface can be mocked independently
-- Unit tests can focus on individual components
-- Integration tests can verify component interactions
+```
+Dataset → DRAdapter → ClusteringAdapter → QualityAdapter → Results
+Network → CommunityAdapter → NodeMeasureAdapter → Results
+```
 
-### 3. **Maintainability**
-- Clear separation of concerns
-- Changes to one strategy don't affect others
-- Consistent interfaces reduce cognitive load
+Adapters handle:
+- Input/output format conversions
+- Passing results between stages
+- Error handling and validation
 
-### 4. **Extensibility**
-- New clustering algorithms can be added by implementing ClusteringAlgorithm
-- New distance measures can be added by implementing DistanceMeasure
-- New data sources can be added by implementing Dataset
-- New quality metrics can be added by implementing QualityMeasure
+## Benchmarking System
 
-## Usage Example
+### Components
+
+**Core (`benchmarks/core.py`):**
+- `BenchmarkRunner` - Executes benchmark configurations
+- `BenchmarkResult` - Stores individual run results
+- Pydantic models for configuration validation
+
+**Registry (`benchmarks/registry.py`):**
+- Algorithm registration and lazy loading
+- Factory functions for creating instances
+- Distance measure creation
+
+**Utilities (`benchmarks/utils.py`):**
+- YAML configuration loading
+- Result export (CSV, JSON)
+- Configuration validation
+
+### Benchmark Execution Flow
+
+```
+1. Load YAML config → Parse with Pydantic
+2. Create algorithm combinations → Generate pipeline permutations
+3. For each iteration:
+   - Build pipeline from template
+   - Execute with timing
+   - Collect results
+4. Export results → CSV/JSON files
+```
+
+## Key Design Benefits
+
+### 1. Extensibility
+Add new algorithms by implementing the appropriate base class:
 
 ```python
-from core import Dataset, DistanceMeasure, ClusteringAlgorithm, QualityMeasure
-from implementations import CSVDataset, EuclideanDistance, KMeansAlgorithm, SilhouetteScore
+class MyClusteringAlgorithm(ClusteringAlgorithm):
+    def fit(self, dataset, **kwargs):
+        # Implementation
 
-# Create strategy instances
-dataset = CSVDataset("data.csv")
-distance = EuclideanDistance()
-algorithm = KMeansAlgorithm()
-quality = SilhouetteScore()
+    def get_labels(self):
+        # Return cluster labels
+```
 
-# Apply strategies
-algorithm.fit(dataset, distance, k=3)
-labels = algorithm.get_labels()
-score = quality.evaluate(dataset, labels)
+Register in `benchmarks/registry.py`:
+
+```python
+ALGORITHMS['clustering']['MyAlgorithm'] = 'path.to.MyClusteringAlgorithm'
+```
+
+### 2. Composability
+Chain algorithms in pipelines:
+
+```python
+pipeline.add_component(DRAdapter(pca))
+pipeline.add_component(ClusteringAdapter(kmeans, distance))
+pipeline.add_component(ClusteringQualityAdapter(silhouette))
+results = pipeline.execute(dataset)
+```
+
+### 3. Configurability
+Define complex experiments in YAML:
+
+```yaml
+pipeline_template:
+  - type: "dimensionality_reduction"
+    algorithms: ["PCA", "TSNE"]
+  - type: "clustering"
+    algorithms: ["Hierarchical", "DBSCAN"]
+  - type: "clustering_quality"
+    algorithms: ["Silhouette"]
 ```
 
 ## Directory Structure
 
 ```
 data_mining_framework/
-├── core/                    # Abstract base classes (Strategy interfaces)
-│   ├── __init__.py         # Package exports
-│   ├── dataset.py          # Dataset interface
-│   ├── distance_measure.py # DistanceMeasure interface
-│   ├── clustering_algorithm.py # ClusteringAlgorithm interface
-│   └── quality_measure.py  # QualityMeasure interface
-├── implementations/         # Concrete strategy implementations
-├── tests/                  # Unit and integration tests
-├── examples/               # Usage examples and tutorials
-└── data/                   # Sample datasets
+├── core/                           # Abstract base classes (interfaces)
+│   ├── clustering.py
+│   ├── community_detection.py
+│   ├── dataset.py
+│   ├── dimensionality_reduction.py
+│   ├── distance_measure.py
+│   ├── edge_measure.py
+│   ├── network.py
+│   ├── node_measure.py
+│   ├── pipeline.py
+│   └── *_quality_measure.py
+│
+├── implementations/                # Concrete implementations
+│   ├── clustering/                # Hierarchical, DBSCAN, KMeans
+│   ├── community_detection/       # Louvain, GirvanNewman, etc.
+│   ├── datasets.py                # CSVDataset, NumpyDataset
+│   ├── distance/                  # Manhattan, Euclidean, Cosine
+│   ├── dr/                        # PCA, MDS, TSNE, Sammon
+│   │   └── quality/              # DR quality measures
+│   ├── edge_measures/            # Edge betweenness, weight, Jaccard
+│   ├── networks/                 # NetworkX wrapper, edge list, matrix
+│   ├── node_measures/            # PageRank, centrality measures
+│   ├── pipelines/                # Adapters for pipeline components
+│   └── quality/                  # Clustering quality measures
+│
+├── benchmarks/                    # Benchmarking system
+│   ├── core.py                   # Benchmark execution engine
+│   ├── registry.py               # Algorithm registry and factories
+│   └── utils.py                  # Config loading and export
+│
+├── utils/                        # Utilities
+│   ├── distance_utils.py         # Distance matrix computation
+│   └── timer.py                  # Performance timing
+│
+├── examples/                     # Example scripts and configs
+│   ├── *.yaml                   # Benchmark configurations
+│   └── *.py                     # Python usage examples
+│
+├── cli.py                       # Command-line interface
+└── run_benchmark.py             # Standalone benchmark runner
 ```
 
-## Future Enhancements
+## Implementation Guidelines
 
-1. **Factory Pattern**: Add factories for creating strategy instances
-2. **Observer Pattern**: Add event notifications for algorithm progress
-3. **Command Pattern**: Add support for algorithm pipelines
-4. **Template Method**: Add base classes with common algorithm structures
-5. **Decorator Pattern**: Add cross-cutting concerns like logging, timing
+### Adding a New Algorithm
 
-## Testing Strategy
+1. **Create implementation** in appropriate subdirectory
+2. **Inherit from base class** and implement required methods
+3. **Register in registry** (`benchmarks/registry.py`)
+4. **Add to exports** (`implementations/__init__.py`)
+5. **Create adapter** if needed (for pipelines)
 
-Each interface includes:
-- Abstract class instantiation tests
-- Method existence verification
-- Mock implementations for testing
-- Error condition handling
-- Integration test support
+### Adding a New Pipeline Step Type
+
+1. **Define base class** in `core/`
+2. **Create adapter** in `implementations/pipelines/`
+3. **Update registry** with factory function
+4. **Add to benchmark core** step type handling
+5. **Document in README** YAML configuration
+
+## Dependencies
+
+**Core:**
+- numpy - Array operations
+- pandas - Data handling
+- scikit-learn - ML algorithms
+- scipy - Scientific computing
+- networkx - Network analysis
+
+**Benchmarking:**
+- pydantic - Configuration validation
+- PyYAML - Config file parsing
+
+**Development:**
+- build - Package building
+
+## Performance Considerations
+
+- **Lazy loading** in registry reduces startup time
+- **Distance matrix caching** avoids recomputation
+- **Pipeline results** passed through adapters to minimize copies
+- **Pydantic validation** catches config errors early
