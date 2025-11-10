@@ -87,17 +87,29 @@ pipeline.add_component(ClusteringQualityAdapter(quality))
 results = pipeline.execute(dataset)
 ```
 
-#### Network Analysis
+#### Network Analysis Pipeline
 
 ```python
-from data_mining_framework import NetworkXWrapper, LouvainCommunityDetection
+from data_mining_framework import (
+    NetworkXWrapper, LouvainCommunityDetection,
+    PageRankMeasure, EdgeBetweennessMeasure,
+    Pipeline, NetworkAdapter, CommunityDetectionAdapter,
+    NodeMeasureAdapter, EdgeMeasureAdapter
+)
 
+# Create network
 network = NetworkXWrapper(filepath='data/karate.edgelist', format='edgelist')
-louvain = LouvainCommunityDetection(resolution=1.0)
 
-louvain.fit(network)
-communities = louvain.get_communities()
-modularity = louvain.get_modularity()
+# Build pipeline: Community Detection → Edge Measures → Node Measures
+pipeline = Pipeline("Network_Analysis")
+pipeline.add_component(NetworkAdapter(network))
+pipeline.add_component(CommunityDetectionAdapter(LouvainCommunityDetection(resolution=1.0)))
+pipeline.add_component(EdgeMeasureAdapter(EdgeBetweennessMeasure()))
+pipeline.add_component(NodeMeasureAdapter(PageRankMeasure(alpha=0.85)))
+
+# Execute and get all results
+results = pipeline.execute(None)
+# Results contain: communities, modularity, edge_scores, node_scores
 ```
 
 #### Run Benchmarks from Python
@@ -112,121 +124,95 @@ print(f"Average time: {results.average_time:.3f}s")
 
 ## Running Example Scripts
 
-The `examples/` directory contains ready-to-run Python scripts demonstrating various framework capabilities. All examples assume you're running from the project root directory.
+The `examples/` directory contains organized examples demonstrating different usage patterns. All examples can run from the project root directory.
 
-### Basic Examples
+📖 **For detailed documentation of all examples, see [`examples/README.md`](examples/README.md)**
 
-#### 1. Simple Clustering Example
+### Quick Example Overview
 
-Demonstrates basic clustering with quality evaluation.
+#### 1. Basic Component Usage (Learning)
+
+Direct component usage without pipelines - great for learning the API.
 
 ```bash
-cd data_mining_framework
-python examples/basic_clustering.py
+python examples/basic_component_usage.py
 ```
 
-**What it does:**
-- Loads the Iris dataset
-- Performs Hierarchical clustering (complete linkage, 3 clusters)
-- Evaluates quality using Calinski-Harabasz Index
+Shows both clustering and network analysis workflows step-by-step.
 
-#### 2. Pipeline Example
+#### 2. Pipeline Examples (Single Analysis)
 
-Shows how to chain algorithms in a pipeline: DR → Clustering → Quality.
+Complete workflows using the Pipeline framework.
 
 ```bash
-python examples/pipeline_example.py
-```
+# Clustering: DR → Clustering → Quality
+python examples/clustering_pipeline_example.py
 
-**What it does:**
-- PCA dimensionality reduction (2 components)
-- Hierarchical clustering (3 clusters)
-- Quality evaluation with Calinski-Harabasz Index
-- Reports execution times for each component
-
-### Comprehensive Examples
-
-#### 3. Multiple Pipeline Examples
-
-Runs 4 different example pipelines demonstrating various algorithm combinations.
-
-```bash
-python examples/run_pipeline_example.py
-```
-
-**What it includes:**
-- **Example 1:** PCA → Hierarchical → Quality
-- **Example 2:** t-SNE → DBSCAN → Quality
-- **Example 3:** Network community detection with node centrality measures
-- **Example 4:** Comparison of community detection algorithms
-
-#### 4. Network Analysis Examples
-
-Focused examples for network analysis tasks.
-
-```bash
+# Network: Community → Edge → Node measures
 python examples/network_pipeline_example.py
 ```
 
-**What it includes:**
-- Simple community detection with Louvain algorithm
-- Node centrality measures (PageRank)
-- Comparison of community detection algorithms (Louvain, Girvan-Newman, Label Propagation)
+#### 3. Benchmark Examples (Compare Algorithms)
 
-### Benchmark Runner
-
-#### 5. Full Benchmark Runner
-
-Comprehensive benchmark system with YAML configuration support.
+Test multiple algorithm combinations with timing metrics.
 
 ```bash
-# Run with default config
-python examples/run_benchmark_example.py
+# From examples/ directory (recommended)
+cd examples
+python clustering_benchmark_example.py  # Tests 4 combinations
+python network_benchmark_example.py     # Tests 27 combinations
 
-# Run with specific config
-python examples/run_benchmark_example.py --config examples/clustering_benchmark.yaml
-
-# Run network analysis benchmark
-python examples/run_benchmark_example.py --config examples/network_benchmark.yaml
-
-# Enable verbose output
-python examples/run_benchmark_example.py --config examples/dr_cl_quality.yaml --verbose
+# Or from project root
+python examples/clustering_benchmark_example.py
+python examples/network_benchmark_example.py
 ```
 
-**Features:**
-- Loads YAML configuration files
-- Auto-detects benchmark type (clustering, DR, network, mixed)
-- Runs multiple algorithm combinations
-- Multiple iterations per combination
-- Exports results to CSV/JSON
-- Detailed progress reporting
+#### 4. YAML Configuration Examples
 
-### Expected Output
+Run benchmarks from YAML configuration files.
 
-When running examples, you should see:
-- Dataset/network loading information
-- Algorithm execution progress
-- Results (cluster labels, quality scores, centrality measures)
-- Execution times
-- File paths for exported results (for benchmark runner)
+```bash
+# Programmatic YAML usage tutorial
+cd examples
+python yaml_benchmark_example.py
+
+# Command-line YAML benchmark runner
+python run_benchmark_example.py -c clustering_benchmark.yaml
+python run_benchmark_example.py -c network_benchmark.yaml --verbose
+```
+
+### Example Categories
+
+| Category | Files | Purpose |
+|----------|-------|---------|
+| **Learning** | `basic_component_usage.py` | Understand the API |
+| **Pipelines** | `clustering_pipeline_example.py`<br>`network_pipeline_example.py` | Single workflow execution |
+| **Benchmarks** | `clustering_benchmark_example.py`<br>`network_benchmark_example.py` | Compare algorithms |
+| **YAML Configs** | `yaml_benchmark_example.py`<br>`run_benchmark_example.py` | Configuration-based execution |
 
 ### Troubleshooting
 
-**Import errors:** Make sure you've installed the package first:
+**Import errors:** Make sure you've installed the package:
 ```bash
 pip install -e .
 ```
 
-**Data file not found:** The examples expect to run from the project root. Use:
+**Path issues when running benchmarks:** Some examples work best from the `examples/` directory:
 ```bash
-cd data_mining_framework
-python examples/script_name.py
+cd examples
+python clustering_benchmark_example.py
 ```
 
-**Missing dependencies:** Install all required packages:
+**Missing dependencies:**
 ```bash
 pip install -e ".[dev]"
 ```
+
+### Next Steps
+
+- 📖 Read [`examples/README.md`](examples/README.md) for detailed descriptions
+- 📝 See YAML configuration examples in `examples/*.yaml`
+- 🏗️ Check [`ARCHITECTURE.md`](ARCHITECTURE.md) for framework design
 
 ## YAML Configuration Reference
 
@@ -437,11 +423,23 @@ params:
 
 ## Example Configurations
 
-See the `examples/` directory:
-- `clustering_benchmark.yaml` - Basic clustering benchmark
-- `dr_cl_quality.yaml` - Full pipeline (DR + Clustering + Quality)
-- `network_benchmark.yaml` - Network analysis benchmark
-- `*.py` - Python examples for direct API usage
+The `examples/` directory contains both YAML configs and Python examples:
+
+**YAML Configs:**
+- `clustering_benchmark.yaml` - Clustering algorithm comparisons
+- `dr_cl_quality.yaml` - Complete DR + Clustering + Quality pipeline
+- `network_benchmark.yaml` - Network analysis with all combinations
+
+**Python Examples:**
+- `basic_component_usage.py` - Learn the API without pipelines
+- `clustering_pipeline_example.py` - Complete clustering workflow
+- `network_pipeline_example.py` - Chained network analysis
+- `clustering_benchmark_example.py` - Benchmark all clustering combinations
+- `network_benchmark_example.py` - Benchmark all network combinations
+- `yaml_benchmark_example.py` - YAML usage tutorial
+- `run_benchmark_example.py` - Command-line benchmark runner
+
+📖 **See [`examples/README.md`](examples/README.md) for detailed documentation**
 
 ## Project Structure
 

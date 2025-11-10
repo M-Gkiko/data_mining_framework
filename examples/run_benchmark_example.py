@@ -180,9 +180,9 @@ def run_benchmark(config_path: str, verbose: bool = False):
                 # Format network combinations more clearly
                 parts = []
                 for k, v in combo.items():
-                    if k in ['community_detection', 'node_measure', 'edge_measure']:
+                    if k in ['community_detection', 'node_measures', 'edge_measures']:
                         parts.append(f"{k.replace('_', ' ').title()}: {v}")
-                combo_str = " + ".join(parts)
+                combo_str = " + ".join(parts) if parts else str(combo)
             else:
                 combo_str = " + ".join([f"{k}: {v}" for k, v in combo.items()])
             print(f"      {i}. {combo_str}")

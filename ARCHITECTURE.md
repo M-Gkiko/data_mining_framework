@@ -135,26 +135,35 @@ class Pipeline:
 
 Each algorithm type has a corresponding adapter:
 
-- `DRAdapter` - Wraps DR algorithms
+**Clustering Pipelines:**
+- `DRAdapter` - Wraps dimensionality reduction algorithms
 - `ClusteringAdapter` - Wraps clustering algorithms
 - `ClusteringQualityAdapter` - Wraps clustering quality measures
 - `DRQualityAdapter` - Wraps DR quality measures
-- `NetworkAdapter` - Wraps network data
-- `CommunityAdapter` - Wraps community detection
+
+**Network Pipelines:**
+- `NetworkAdapter` - Wraps network data structures
+- `CommunityDetectionAdapter` - Wraps community detection algorithms
 - `NodeMeasureAdapter` - Wraps node centrality measures
 - `EdgeMeasureAdapter` - Wraps edge measures
 
 ### Pipeline Flow
 
+**Clustering Pipeline:**
 ```
-Dataset → DRAdapter → ClusteringAdapter → QualityAdapter → Results
-Network → CommunityAdapter → NodeMeasureAdapter → Results
+Dataset → DRAdapter → ClusteringAdapter → ClusteringQualityAdapter → Results
+```
+
+**Network Analysis Pipeline:**
+```
+Network → NetworkAdapter → CommunityDetectionAdapter → EdgeMeasureAdapter → NodeMeasureAdapter → Results
 ```
 
 Adapters handle:
 - Input/output format conversions
-- Passing results between stages
+- Passing results between stages (accumulates all results)
 - Error handling and validation
+- Type checking for proper data flow
 
 ## Benchmarking System
 
@@ -210,11 +219,22 @@ ALGORITHMS['clustering']['MyAlgorithm'] = 'path.to.MyClusteringAlgorithm'
 ### 2. Composability
 Chain algorithms in pipelines:
 
+**Clustering Pipeline:**
 ```python
 pipeline.add_component(DRAdapter(pca))
 pipeline.add_component(ClusteringAdapter(kmeans, distance))
 pipeline.add_component(ClusteringQualityAdapter(silhouette))
 results = pipeline.execute(dataset)
+```
+
+**Network Pipeline:**
+```python
+pipeline.add_component(NetworkAdapter(network))
+pipeline.add_component(CommunityDetectionAdapter(louvain))
+pipeline.add_component(EdgeMeasureAdapter(betweenness))
+pipeline.add_component(NodeMeasureAdapter(pagerank))
+results = pipeline.execute(None)
+# results = {'communities': ..., 'modularity': ..., 'edge_scores': ..., 'node_scores': ...}
 ```
 
 ### 3. Configurability
@@ -269,9 +289,16 @@ data_mining_framework/
 │   └── timer.py                  # Performance timing
 │
 └── examples/                     # Example scripts and configs
+    ├── README.md                # Detailed example documentation
     ├── *.yaml                   # Benchmark configurations
-    ├── run_benchmark_example.py # Comprehensive benchmark runner
-    └── *.py                     # Python usage examples
+    ├── run_benchmark_example.py # CLI benchmark runner
+    ├── yaml_benchmark_example.py # YAML usage tutorial
+    ├── clustering_pipeline_example.py    # Clustering workflow
+    ├── network_pipeline_example.py       # Network workflow
+    ├── clustering_benchmark_example.py   # Compare clustering algorithms
+    ├── network_benchmark_example.py      # Compare network algorithms
+    ├── basic_component_usage.py # Direct API usage (no pipelines)
+    └── *.py                     # Other examples
 ```
 
 ## Implementation Guidelines
@@ -314,3 +341,16 @@ data_mining_framework/
 - **Distance matrix caching** avoids recomputation
 - **Pipeline results** passed through adapters to minimize copies
 - **Pydantic validation** catches config errors early
+
+## Examples and Usage
+
+For practical examples demonstrating these architectural patterns:
+
+- 📖 **[`examples/README.md`](examples/README.md)** - Complete guide to all examples
+- 🔧 **`basic_component_usage.py`** - Direct component usage
+- 🔗 **`clustering_pipeline_example.py`** - Pipeline pattern for clustering
+- 🌐 **`network_pipeline_example.py`** - Pipeline pattern for networks
+- ⚖️ **Benchmark examples** - Algorithm comparison workflows
+- 📝 **YAML configs** - Declarative configuration approach
+
+See the main [`README.md`](README.md) for quick start instructions.
